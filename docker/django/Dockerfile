@@ -44,4 +44,8 @@ USER appuser
 
 WORKDIR /opt/project/src
 
+
+EXPOSE 8000
+EXPOSE 3000
+
 ENTRYPOINT ["/entrypoint"]

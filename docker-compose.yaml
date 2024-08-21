@@ -20,6 +20,8 @@ services:
     <<: *django
     ports:
       - "8000:8000"
+      - "3000:3000"
+
     command: dev
     # entrypoint: /entrypoint dev
   celeryworker:
@@ -47,10 +49,10 @@ services:
       dockerfile: ./docker/postgres/Dockerfile
     image: "${COMPOSE_IMAGES_PREFIX}_dev_postgres"
     volumes:
-      - ./data/dev_postgres:/var/lib/postgresql/data:Z
-      - ./data/dev_backups:/backups:z
-    # ports:
-    #   - "5432:5432"
+      - dev_psql:/var/lib/postgresql/data:Z
+      - dev_psql:/backups:z
+    ports:
+      - "5432:5432"
     # environment:
     #   - POSTGRES_ADDITIONAL_DATABASES=db1,db2
     env_file:
@@ -94,3 +96,4 @@ services:
 volumes:
   dev_redis:
   dev_caddy:
+  dev_psql:

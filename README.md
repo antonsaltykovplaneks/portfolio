@@ -3,65 +3,6 @@
 📌 Insert here the project description. Also, change the caption of
 the README.md file with name of the project.
 
-## How to create the project
-
-📌 Delete this section after creating new project.
-
-Download the last version of the boiler plate from the repository: https://github.com/planeks/django-docker-boilerplate
-
-You can download the ZIP archive and unpack it to the directory, or clone the repository (but do not forget to clean the Git history in that case). 
-
-Use the global find and replace for changing the string `NEWPROJECTNAME` in the files in the `src` directory to the proper project name. The easiest way to do it just use `Replace` feature in the IDE.
-
-There are three files where the changes should be done:
-
-```
-src/config/settings.py
-src/config/templates/index.html
-src/config/urls.py
-```
-
-## 🐳 Install Docker and Docker Compose
-
-For the local computer we recommend using Docker Desktop. 
-You can download it from the official site: https://www.docker.com/products/docker-desktop
-
-There are versions for Windows, Linux and Mac OS.
-
-For the server installation you need the Docker Engine and Docker Compose. 
-Use the following commands to install Docker on Ubuntu Linux:
-
-```shell
-# Add Docker's official GPG key:
-$ sudo apt-get update
-$ sudo apt-get install ca-certificates curl
-$ sudo install -m 0755 -d /etc/apt/keyrings
-$ sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
-$ sudo chmod a+r /etc/apt/keyrings/docker.asc
-
-# Add the repository to Apt sources:
-$ echo \
-  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
-  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
-  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-$ sudo apt-get update
-$ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-```
-
-> If you are using another Linux distribution, please, check the official documentation: https://docs.docker.com/engine/install/
-
-Test if Docker is installed correctly:
-
-```shell
-$ sudo systemctl status docker
-```
-
-Add the current user to the `docker` group (to avoid using `sudo`):
-
-```shell
-$ sudo usermod -aG docker ${USER}
-```
-
 ## 🔨Setup the project locally
 
 You need to run the project locally during the development. First of all, copy the `dev.env` file to the `.env` file in the same directory.
@@ -74,7 +15,7 @@ Open the `.env` file in your editor and specify the settings:
 
 ```shell
 PYTHONENCODING=utf8
-COMPOSE_IMAGES_PREFIX=newprojectname
+COMPOSE_IMAGES_PREFIX=porfolio
 DEBUG=1
 CONFIGURATION=dev
 DJANGO_LOG_LEVEL=INFO
@@ -359,7 +300,7 @@ Open the `.env` file in your editor and change the settings as you need:
 
 ```shell
 PYTHONENCODING=utf8
-COMPOSE_IMAGES_PREFIX=newprojectname
+COMPOSE_IMAGES_PREFIX=porfolio
 DEBUG=0
 CONFIGURATION=prod
 DJANGO_LOG_LEVEL=INFO
@@ -425,12 +366,12 @@ The `backup.sh` script should contain the next code:
 ```bash
 #!/bin/bash
 TIME_SUFFIX=`date +%Y-%m-%d:%H:%M:%S`
-cd /home/webprod/projects/newprojectname
+cd /home/webprod/projects/porfolio
 docker compose -f docker-compose.prod.yml exec -T postgres backup
 DB_DUMP_NAME=`docker compose -f docker-compose.prod.yml exec -T postgres backups | head -n 3 | tail -n 1 | tr -s ' ' '\n' | tail -1`
-docker cp newprojectname_postgres_1:/backups/$DB_DUMP_NAME /home/webprod/backups/
-tar --exclude='media/thumbs' -zcvf /home/webprod/backups/newprojectname-$TIME_SUFFIX.tar.gz /home/webprod/projects/newprojectname/data/prod/media /home/webprod/projects/newprojectname/.env /home/webprod/projects/newprojectname/src /home/webprod/backups/$DB_DUMP_NAME
-s3cmd put /home/webprod/backups/newprojectname-$TIME_SUFFIX.tar.gz s3://newprojectname-backups/staging/
+docker cp porfolio_postgres_1:/backups/$DB_DUMP_NAME /home/webprod/backups/
+tar --exclude='media/thumbs' -zcvf /home/webprod/backups/porfolio-$TIME_SUFFIX.tar.gz /home/webprod/projects/porfolio/data/prod/media /home/webprod/projects/porfolio/.env /home/webprod/projects/porfolio/src /home/webprod/backups/$DB_DUMP_NAME
+s3cmd put /home/webprod/backups/porfolio-$TIME_SUFFIX.tar.gz s3://porfolio-backups/staging/
 find /home/webprod/backups/*.gz -mtime +5 -exec rm {} \;
 docker compose -f docker-compose.prod.yml exec -T postgres cleanup 7
 ```
@@ -460,7 +401,7 @@ If you need to restore the database you need to do the following steps.
 Copy the database dump to the `backups` directory:
 
 ```bash
-$ docker cp <dump_name> newprojectname_postgres_1:/backups/
+$ docker cp <dump_name> porfolio_postgres_1:/backups/
 ```
 
 Stop the app containers that are using the database (`django`, `celeryworker`, etc.)

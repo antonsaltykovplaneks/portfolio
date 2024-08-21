@@ -1,4 +1,4 @@
-# NEWPROJECTNAME
+# porfolio
 
 Insert project description here.
 
@@ -7,11 +7,11 @@ Insert project description here.
 ```mermaid
 C4Context
 Person(user, User, "User with access to the application")
-System_Boundary(proj, "NEWPROJECTNAME") {
+System_Boundary(proj, "porfolio") {
     Container(proj_proxy, "Caddy proxy")
     Rel(user, proj_proxy, "Use system")
     Rel(proj_proxy, proj_be, "Forward requests")
-    Container(proj_be, "NEWPROJECTNAME server")
+    Container(proj_be, "porfolio server")
         BiRel(proj_be, app_db, "Read/Write data")
         BiRel(proj_be, redis, "Read/Write data")
     Container(flower, "Celery task monitor")

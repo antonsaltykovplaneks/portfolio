@@ -8,6 +8,8 @@ from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
 from django.shortcuts import get_object_or_404
 from django.utils.http import urlsafe_base64_decode
+
+from accounts.tasks import send_email
 from .forms import EditUserForm
 
 
@@ -84,6 +86,7 @@ def register_view(request):
         if form.is_valid():
             user = form.save()
             user.backend = "django.contrib.auth.backends.ModelBackend"
+            send_email.delay(user.id)
             login(request, user)
     else:
         form = UserRegistrationForm()

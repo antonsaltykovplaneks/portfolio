@@ -41,11 +41,11 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # 'polymorphic',
     # 'channels',
-    # 'anymail',
     "django_extensions",
     # Add the apps here
     "core",
     "accounts",
+    "anymail",
 ]
 
 if CONFIGURATION == "dev":
@@ -217,10 +217,10 @@ SESSION_COOKIE_AGE = config(
 EMAIL_BACKEND = "anymail.backends.mailgun.EmailBackend"
 ANYMAIL = {
     "MAILGUN_API_KEY": f"{config('MALIGUN_API_KEY')}",
-    "MAILGUN_SENDER_DOMAIN": f"{config('MALIGUN_SUBDOMAIN')}.planeks.org",
+    "MAILGUN_SENDER_DOMAIN": f"{config('MALIGUN_SUBDOMAIN')}.mailgun.org",
 }
-DEFAULT_FROM_EMAIL = f"noreply@{config('MALIGUN_SUBDOMAIN')}.planeks.org"
-
+DEFAULT_FROM_EMAIL = f"mailgun@{config('MALIGUN_SUBDOMAIN')}.mailgun.org"
+SERVER_EMAIL = f"mailgun@{config('MALIGUN_SUBDOMAIN')}.mailgun.org"
 
 CACHES = {
     "default": {

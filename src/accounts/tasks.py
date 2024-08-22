@@ -16,11 +16,11 @@ def generate_verification_link(user: User):
     token = default_token_generator.make_token(user)
     subdomain = config("MALIGUN_SUBDOMAIN")
     verification_link = reverse("verify_email", kwargs={"uidb64": uid, "token": token})
-    return f"https://{subdomain}.planeks.org{verification_link}"
+    return f"https://{subdomain}.planeks.org/{verification_link}"
 
 
 @shared_task
-def send_email(user_id: int):
+def send_email_celery_task(user_id: int):
     user = User.objects.get(pk=user_id)
     verification_link = generate_verification_link(user)
     subject = "Verify Your Email Address"

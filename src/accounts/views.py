@@ -1,15 +1,15 @@
-from django.urls import reverse
-from django.http import HttpResponse
-from django.shortcuts import render, redirect
 from django.conf import settings
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
-from django.shortcuts import get_object_or_404
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils.http import urlsafe_base64_decode
 
-from accounts.tasks import send_email
+from accounts.tasks import send_email_celery_task
+
 from .forms import EditUserForm
 
 
@@ -86,7 +86,7 @@ def register_view(request):
         if form.is_valid():
             user = form.save()
             user.backend = "django.contrib.auth.backends.ModelBackend"
-            send_email.delay(user.id)
+            send_email_celery_task.delay(user.id)
             login(request, user)
     else:
         form = UserRegistrationForm()

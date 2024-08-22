@@ -8,7 +8,6 @@ x-django: &django
   depends_on:
     - postgres
     - redis
-    - mailhog
   volumes:
     - ./src:/opt/project/src:cached
     - ./data/dev:/data:z
@@ -57,12 +56,6 @@ services:
     #   - POSTGRES_ADDITIONAL_DATABASES=db1,db2
     env_file:
       - ./.env
-  mailhog:
-    image: mailhog/mailhog
-    logging:
-      driver: 'none'  # disable saving logs
-    ports:
-      - "8025:8025" # web ui
   mkdocs:
     build:
       context: .

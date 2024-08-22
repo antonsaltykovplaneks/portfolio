@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% load i18n core_tags static %}
+
+{% block extra_meta %}
+<meta name="robots" content="noindex, nofollow">
+{% endblock %}
+
+{% block base_content %}
+<main class="auth mt-5">
+    <div class="container">
+        <div class="row justify-content-between">
+            <div class="col-auto">
+                <h1 class="mb-4">{% trans "Login" %}</h1>
+                <form method="post" action="{% url 'login' %}">
+                    <input type="hidden" name="next" value="{{ next }}" />
+                    
+                    {% csrf_token %}
+                    {% include "forms/form_fields.html" with form=form_login hide_required_badges=True %}
+                    <div class="form-group">
+                        <button class="btn btn-lg btn-primary btn-block" type="submit" name="login_submit">{% trans "Login" %}</button>
+                    </div>
+
+                </form>
+            </div>
+
+            <div class="col-auto pr-3">
+                <h1 class="mb-4">{% trans "Register" %}</h1>
+                
+                <form method="post" action="{% url 'register' %}">
+                    <input type="hidden" name="next" value="{{ next }}" />
+                
+                    {% csrf_token %}
+                    {% include "forms/form_fields.html" with form=form_registration hide_required_badges=True %}
+                
+                    <div class="form-group">
+                        <button class="btn btn-lg btn-primary btn-block" type="submit" name="register_submit">{% trans "Register" %}</button>
+                    </div>
+                
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}

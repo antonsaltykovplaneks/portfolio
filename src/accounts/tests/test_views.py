@@ -94,7 +94,6 @@ class RegisterViewTests(BaseViewTests):
         self.assertEqual(response.status_code, 302)
 
     def test_form_validation(self):
-        # from django.core import mail
         response = self.client.post(
             reverse("register"),
             data={

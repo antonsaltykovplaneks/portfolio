@@ -7,6 +7,7 @@ from django.contrib.auth.forms import (
     AuthenticationForm,
 )
 from .models import User
+from config import settings
 
 
 class UserChangeForm(BaseUserChangeForm):
@@ -76,7 +77,7 @@ class UserCreationForm(BaseUserCreationForm):
         if password1 and password2 and password1 != password2:
             raise forms.ValidationError(self.error_messages["password_mismatch"])
 
-        if password1 and len(password1) < 6:
+        if password1 and len(password1) < settings.MINIMUM_PASSWORD_LENGTH:
             raise forms.ValidationError(self.error_messages["password_too_short"])
         return password2
 
@@ -97,16 +98,16 @@ class EditUserForm(forms.ModelForm):
         )
 
     def clean_email(self):
-        email = self.cleaned_data.get("email")
-        if self.instance.email == email:
-            return email
+        received_email = self.cleaned_data.get("email")
+        if self.instance.email == received_email:
+            return received_email
         else:
-            uu = User.objects.filter(email=email).exclude(pk=self.instance.pk).exists()
+            uu = User.objects.filter(email=received_email).exclude(pk=self.instance.pk).exists()
             if uu:
                 raise forms.ValidationError(
                     _("This email address is already using by another user.")
                 )
-        return email
+        return received_email
 
 
 class UserRegistrationForm(UserCreationForm):

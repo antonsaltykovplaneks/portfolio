@@ -15,13 +15,28 @@
             </tr>
             <tr>
                 <td>{% trans "Email" %}</td>
-                <td><a href="mailto:{{ request.user.email }}">{{ request.user.email }}</a></td>
+                <td>
+                    <a href="mailto:{{ request.user.email }}">{{ request.user.email }}</a>
+                    {% if not request.user.is_verified %}
+                        <span class="badge bg-warning text-dark ms-2">{% trans "Not verified" %}</span>
+                    {% endif %}
+                </td>
             </tr>
         </table>
     </div>
 </div>
 
-<div class="mt-4">
-    <a href="{% url 'edit_personal_information' %}" class="btn btn-secondary">{% trans "Edit profile" %}</a>
+<div class="row mt-4">
+    <div class="col">
+        <a href="{% url 'edit_personal_information' %}" class="btn btn-secondary w-100">
+            {% trans "Edit profile" %}
+        </a>
+    </div>
+    <div class="col">
+        <a href="{% url 'password_reset' %}" class="btn btn-secondary w-100" style="background-color: #ff0000; color: white; border-color: #ff0000;">
+            {% trans "Reset password" %}
+        </a>
+    </div>
 </div>
+
 {% endblock %}

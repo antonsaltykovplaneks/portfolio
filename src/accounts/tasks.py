@@ -28,6 +28,7 @@ def send_email_celery_task(user_id: int):
         "accounts/email_verification.html",
         {"user": user, "verification_link": verification_link},
     )
+
     send_mail(
         subject,
         "",
@@ -35,3 +36,4 @@ def send_email_celery_task(user_id: int):
         [user.email],
         html_message=html_message,
     )
+    print('ok')

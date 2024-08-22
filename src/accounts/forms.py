@@ -7,6 +7,7 @@ from django.contrib.auth.forms import (
     AuthenticationForm,
 )
 from .models import User
+from config import settings
 
 
 class UserChangeForm(BaseUserChangeForm):
@@ -15,19 +16,19 @@ class UserChangeForm(BaseUserChangeForm):
         help_text=_(
             "Raw passwords are not stored, so there is no way to see this "
             "user's password, but you can change the password using "
-            "<a href=\"{}\">this form</a>."
+            '<a href="{}">this form</a>.'
         ),
     )
 
     class Meta:
         model = User
-        fields = '__all__'
+        fields = "__all__"
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
     def clean_password(self):
-        return self.initial['password']
+        return self.initial["password"]
 
 
 class UserCreationForm(BaseUserCreationForm):
@@ -35,9 +36,13 @@ class UserCreationForm(BaseUserCreationForm):
     A form that creates a user, with no privileges,
     from the given email, phone and password.
     """
+
     error_messages = {
-        'duplicate_email': _("This email address is already registered by another user."),
-        'password_mismatch': _("The two passwords you filled out do not match."),
+        "duplicate_email": _(
+            "This email address is already registered by another user."
+        ),
+        "password_mismatch": _("The two passwords you filled out do not match."),
+        "password_too_short": _("The password must be at least 6 characters long."),
     }
     password1 = forms.CharField(
         label=_("Password"),
@@ -53,25 +58,27 @@ class UserCreationForm(BaseUserCreationForm):
 
     class Meta:
         model = User
-        fields = '__all__'
+        fields = "__all__"
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
     def clean_email(self):
-        email = self.cleaned_data['email'].lower()
+        email = self.cleaned_data["email"].lower()
         try:
             User.objects.get(email__iexact=email)
         except User.DoesNotExist:
             return email
-        raise forms.ValidationError(self.error_messages['duplicate_email'])
+        raise forms.ValidationError(self.error_messages["duplicate_email"])
 
     def clean_password2(self):
         password1 = self.cleaned_data.get("password1")
         password2 = self.cleaned_data.get("password2")
         if password1 and password2 and password1 != password2:
-            raise forms.ValidationError(
-                self.error_messages['password_mismatch'])
+            raise forms.ValidationError(self.error_messages["password_mismatch"])
+
+        if password1 and len(password1) < settings.MINIMUM_PASSWORD_LENGTH:
+            raise forms.ValidationError(self.error_messages["password_too_short"])
         return password2
 
     def save(self, commit=True):
@@ -86,19 +93,21 @@ class EditUserForm(forms.ModelForm):
     class Meta:
         model = User
         fields = (
-            'name',
-            'email',
+            "name",
+            "email",
         )
 
     def clean_email(self):
-        email = self.cleaned_data.get('email')
-        if self.instance.email == email:
-            return email
+        received_email = self.cleaned_data.get("email")
+        if self.instance.email == received_email:
+            return received_email
         else:
-            uu = User.objects.filter(email=email).exclude(pk=self.instance.pk).exists()
+            uu = User.objects.filter(email=received_email).exclude(pk=self.instance.pk).exists()
             if uu:
-                raise forms.ValidationError(_('This email address is already using by another user.'))
-        return email
+                raise forms.ValidationError(
+                    _("This email address is already using by another user.")
+                )
+        return received_email
 
 
 class UserRegistrationForm(UserCreationForm):
@@ -106,7 +115,7 @@ class UserRegistrationForm(UserCreationForm):
 
     class Meta:
         model = User
-        fields = ('email', 'name')
+        fields = ("email", "name")
 
 
 class UserPasswordSetupForm(forms.Form):
@@ -123,40 +132,39 @@ class UserPasswordSetupForm(forms.Form):
     )
 
     error_messages = {
-        'password_mismatch': _("The two passwords you filled out do not match."),
+        "password_mismatch": _("The two passwords you filled out do not match."),
     }
 
     def clean_password2(self):
         password1 = self.cleaned_data.get("password1")
         password2 = self.cleaned_data.get("password2")
         if password1 and password2 and password1 != password2:
-            raise forms.ValidationError(
-                self.error_messages['password_mismatch'])
+            raise forms.ValidationError(self.error_messages["password_mismatch"])
         return password2
 
 
 class UserAuthForm(AuthenticationForm):
     error_messages = {
-        'invalid_login': _(
-            'Please enter correct email address and password. '
-            'Note that both fields are case-sensitive.'
+        "invalid_login": _(
+            "Please enter correct email address and password. "
+            "Note that both fields are case-sensitive."
         ),
-        'inactive': _('This account is inactive.'),
+        "inactive": _("This account is inactive."),
     }
 
     def __init__(self, request=None, *args, **kwargs):
         super(UserAuthForm, self).__init__(request, *args, **kwargs)
-        self.fields['username'].label = _('Email')
-        self.fields['username'].widget = forms.EmailInput()
+        self.fields["username"].label = _("Email")
+        self.fields["username"].widget = forms.EmailInput()
 
 
 class EditUserProfileForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = ('name',)
+        fields = ("name",)
 
 
 class EditUserEmailForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = ('email',)
+        fields = ("email",)

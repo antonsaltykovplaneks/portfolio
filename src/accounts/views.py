@@ -1,16 +1,19 @@
+from django.shortcuts import render, redirect, reverse
 from django.conf import settings
-from django.contrib.auth import login, logout
+from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+
 from django.utils.http import urlsafe_base64_decode
 
 from accounts.tasks import send_email_celery_task
 
-from .forms import EditUserForm
+from .forms import EditUserForm, UserAuthForm, UserRegistrationForm
+
 
 
 @login_required
@@ -48,53 +51,53 @@ def personal_information_edit_view(request):
 
 def login_view(request):
     """
-    View to handle user login.
+    View to handle user login and registration.
     """
-    from .forms import UserAuthForm
-
     redirect_to = request.POST.get("next", request.GET.get("next", ""))
 
     if request.user.is_authenticated:
         if redirect_to == request.path:
             raise ValueError("Redirection loop for authenticated user detected.")
         return redirect(reverse("index"))
-    elif request.method == "POST":
-        form = UserAuthForm(request, data=request.POST)
-        if form.is_valid():
-            login(request, form.get_user())
+
+    if request.method == "POST":
+        form_login = UserAuthForm(request, data=request.POST)
+        form_registration = UserRegistrationForm()
+
+        if form_login.is_valid():
+            login(request, form_login.get_user())
             return redirect(reverse("index"))
+
     else:
-        form = UserAuthForm(request)
+        form_login = UserAuthForm(request)
+        form_registration = UserRegistrationForm()
 
     context = {
-        "form": form,
+        "form_login": form_login,
+        "form_registration": form_registration,
     }
-    return render(request, "accounts/login.html", context)
+    return render(request, "accounts/auth.html", context)
 
 
 def register_view(request):
     """
     View to handle user registration.
     """
-    from .forms import UserRegistrationForm
-
     if request.user.is_authenticated:
         return redirect(reverse("index"))
 
     if request.method == "POST":
-        form = UserRegistrationForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            user.backend = "django.contrib.auth.backends.ModelBackend"
-            send_email_celery_task.delay(user.id)
-            login(request, user)
-    else:
-        form = UserRegistrationForm()
+        form_registration = UserRegistrationForm(request.POST)
+        form_login = UserAuthForm(request)
 
-    context = {
-        "form": form,
-    }
-    return render(request, "accounts/register.html", context)
+        if form_registration.is_valid():
+            user = form_registration.save()
+            user.backend = "django.contrib.auth.backends.ModelBackend"
+            login(request, user)
+            send_email_celery_task.delay(user.id)
+            return redirect(reverse("index"))
+
+    return redirect(reverse("login"))
 
 
 def logout_view(request):

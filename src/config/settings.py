@@ -230,6 +230,7 @@ CACHES = {
     },
 }
 
+MINIMUM_PASSWORD_LENGTH = config('MINIMUM_PASSWORD_LENGTH', default=6, cast=int)
 
 if CONFIGURATION == "prod":
     MIDDLEWARE.insert(1, "whitenoise.middleware.WhiteNoiseMiddleware")

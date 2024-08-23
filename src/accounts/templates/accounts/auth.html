@@ -11,6 +11,12 @@
         <div class="row justify-content-between">
             <div class="col-auto">
                 <h1 class="mb-4">{% trans "Login" %}</h1>
+                <div class="col-md-8 mx-auto social-container my-2 order-md-1">
+                    {% url 'social:begin' 'linkedin-oauth2' %}
+                    <button class="btn btn-primary mb-2">
+                        <a href="{% url 'social:begin' 'linkedin-oauth2' %}">Login With Linkedin</a>
+                    </button>
+                </div>
                 <form method="post" action="{% url 'login' %}">
                     <input type="hidden" name="next" value="{{ next }}" />
                     

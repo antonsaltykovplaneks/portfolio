@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "core",
     "accounts",
     "anymail",
+    "social_django",
 ]
 
 if CONFIGURATION == "dev":
@@ -102,6 +103,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "core.middleware.login_required_middleware",
+    "social_django.middleware.SocialAuthExceptionMiddleware",
 ]
 
 if CONFIGURATION == "dev":
@@ -128,6 +130,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "social_django.context_processors.backends",
             ],
         },
     },
@@ -207,7 +210,17 @@ CELERY_BEAT_SCHEDULE = {}
 
 USE_HTTPS = False
 
+AUTHENTICATION_BACKENDS = [
+    "social_core.backends.linkedin.LinkedinOAuth2",
+    "django.contrib.auth.backends.ModelBackend",
+]
+LOGIN_URL = "login"
+LOGIN_REDIRECT_URL = "home"
+LOGOUT_URL = "logout"
 LOGOUT_REDIRECT_URL = "/"
+SOCIAL_AUTH_LINKEDIN_OAUTH2_KEY = config("SOCIAL_AUTH_LINKEDIN_OAUTH2_KEY")
+SOCIAL_AUTH_LINKEDIN_OAUTH2_SECRET = config("SOCIAL_AUTH_LINKEDIN_OAUTH2_SECRET")
+
 
 SESSION_COOKIE_AGE = config(
     "SESSION_COOKIE_AGE", default=604800, cast=int
@@ -230,7 +243,7 @@ CACHES = {
     },
 }
 
-MINIMUM_PASSWORD_LENGTH = config('MINIMUM_PASSWORD_LENGTH', default=6, cast=int)
+MINIMUM_PASSWORD_LENGTH = config("MINIMUM_PASSWORD_LENGTH", default=6, cast=int)
 
 if CONFIGURATION == "prod":
     MIDDLEWARE.insert(1, "whitenoise.middleware.WhiteNoiseMiddleware")

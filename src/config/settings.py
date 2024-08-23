@@ -230,7 +230,12 @@ CACHES = {
     },
 }
 
-MINIMUM_PASSWORD_LENGTH = config('MINIMUM_PASSWORD_LENGTH', default=6, cast=int)
+LINKEDIN_CLIENT_ID = config("SOCIAL_AUTH_LINKEDIN_OAUTH2_KEY")
+LINKEDIN_CLIENT_SECRET = config("SOCIAL_AUTH_LINKEDIN_OAUTH2_SECRET")
+LINKEDIN_REDIRECT_URL = "linkedin_callback"
+
+
+MINIMUM_PASSWORD_LENGTH = config("MINIMUM_PASSWORD_LENGTH", default=6, cast=int)
 
 if CONFIGURATION == "prod":
     MIDDLEWARE.insert(1, "whitenoise.middleware.WhiteNoiseMiddleware")

@@ -1,20 +1,16 @@
 from http.client import HTTPException
 from urllib.parse import urlencode
+
+import requests
 from django.contrib.auth import login
 from django.shortcuts import redirect
 from django.urls import reverse
-import requests
-
 
 from accounts.models import User
 from config import settings
 
 
 class LinkedInConnector:
-    authorize_url = "https://www.linkedin.com/oauth/v2/authorization/?"
-    access_token_url = "https://www.linkedin.com/oauth/v2/accessToken"
-    profile_url = "https://api.linkedin.com/v2/userinfo"
-
     @classmethod
     def _bad_request_check(cls, response):
         if response.status_code != 200:
@@ -27,11 +23,11 @@ class LinkedInConnector:
             "response_type": "code",
             "client_id": settings.LINKEDIN_CLIENT_ID,
             "redirect_uri": settings.SITE_URL + reverse(settings.LINKEDIN_REDIRECT_URL),
-            "state": "VBnaEeFW62A53dzsdf424",
-            "scope": "profile,email,openid",
+            "state": settings.LINKEDIN_STATE,
+            "scope": settings.LINKEDIN_SCOPE,
         }
 
-        return redirect(cls.authorize_url + urlencode(params))
+        return redirect(settings.LINKEDIN_AUTHORIZATION_URL + urlencode(params))
 
     @classmethod
     def get_authorization_code(self, request):
@@ -45,10 +41,10 @@ class LinkedInConnector:
             "client_id": settings.LINKEDIN_CLIENT_ID,
             "client_secret": settings.LINKEDIN_CLIENT_SECRET,
             "redirect_uri": settings.SITE_URL + reverse(settings.LINKEDIN_REDIRECT_URL),
-            "grant_type": "authorization_code",
+            "grant_type": settings.LINKEDIN_GRANT_TYPE,
         }
 
-        response = requests.post(cls.access_token_url, data=data)
+        response = requests.post(settings.LINKEDIN_ACCESS_TOKEN_URL, data=data)
         cls._bad_request_check(response)
         return response.json().get("access_token")
 
@@ -56,7 +52,7 @@ class LinkedInConnector:
     def get_userinfo(cls, access_token):
 
         headers = {"Authorization": f"Bearer {access_token}"}
-        userinfo_response = requests.get(cls.profile_url, headers=headers)
+        userinfo_response = requests.get(settings.LINKEDIN_PROFILE_URL, headers=headers)
         cls._bad_request_check(userinfo_response)
         return userinfo_response.json()
 

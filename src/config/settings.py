@@ -234,7 +234,12 @@ CACHES = {
 LINKEDIN_CLIENT_ID = config("SOCIAL_AUTH_LINKEDIN_OAUTH2_KEY")
 LINKEDIN_CLIENT_SECRET = config("SOCIAL_AUTH_LINKEDIN_OAUTH2_SECRET")
 LINKEDIN_REDIRECT_URL = "linkedin_callback"
-
+LINKEDIN_AUTHORIZATION_URL = "https://www.linkedin.com/oauth/v2/authorization/?"
+LINKEDIN_ACCESS_TOKEN_URL = "https://www.linkedin.com/oauth/v2/accessToken"
+LINKEDIN_PROFILE_URL = "https://api.linkedin.com/v2/userinfo"
+LINKEDIN_STATE = config("LINKEDIN_STATE", default="VBnaEeFW62A53dzsdf424")
+LINKEDIN_SCOPE = "profile,email,openid"
+LINKEDIN_GRANT_TYPE = "authorization_code"
 
 MINIMUM_PASSWORD_LENGTH = config("MINIMUM_PASSWORD_LENGTH", default=6, cast=int)
 

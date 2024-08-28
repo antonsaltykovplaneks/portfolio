@@ -15,7 +15,6 @@ from accounts.tasks import send_email_celery_task
 from .forms import EditUserForm, UserAuthForm, UserRegistrationForm
 
 
-
 @login_required
 def personal_information_view(request):
     """
@@ -41,8 +40,11 @@ def personal_information_edit_view(request):
             if form.initial.get("email") != user.email:
                 user.is_verified = False
                 send_email_celery_task.delay(user.id)
-                messages.info(request, "Email verification link has been sent to your email address.")
-            
+                messages.info(
+                    request,
+                    "Email verification link has been sent to your email address.",
+                )
+
             form.save()
             messages.success(request, "Your personal information has been updated.")
             return redirect(reverse("personal_information"))
@@ -95,14 +97,14 @@ def register_view(request):
     if request.method == "POST":
         form_registration = UserRegistrationForm(request.POST)
 
-        from accounts.models import User as u
-        u.objects.all().delete()
         if form_registration.is_valid():
             user = form_registration.save()
             user.backend = "django.contrib.auth.backends.ModelBackend"
             login(request, user)
             send_email_celery_task.delay(user.id)
-            messages.info(request, "Email verification link has been sent to your email address.")
+            messages.info(
+                request, "Email verification link has been sent to your email address."
+            )
             return redirect(reverse("index"))
         else:
             context = {

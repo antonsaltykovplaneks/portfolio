@@ -7,7 +7,7 @@ set -o nounset
 PORT="${APP_PORT:-8000}"
 
 echo "Checking the necessary directories..."
-mkdir -p /data/staticfiles
+mkdir -p /opt/project/src/staticfiles
 # mkdir -p /data/media
 
 if [ -z "${POSTGRES_USER}" ]; then

@@ -366,12 +366,11 @@ The `backup.sh` script should contain the next code:
 ```bash
 #!/bin/bash
 TIME_SUFFIX=`date +%Y-%m-%d:%H:%M:%S`
-cd /home/webprod/projects/porfolio
+cd /home/webprod/projects/portfolio
 docker compose -f docker-compose.prod.yml exec -T postgres backup
 DB_DUMP_NAME=`docker compose -f docker-compose.prod.yml exec -T postgres backups | head -n 3 | tail -n 1 | tr -s ' ' '\n' | tail -1`
-docker cp porfolio_postgres_1:/backups/$DB_DUMP_NAME /home/webprod/backups/
-tar --exclude='media/thumbs' -zcvf /home/webprod/backups/porfolio-$TIME_SUFFIX.tar.gz /home/webprod/projects/porfolio/data/prod/media /home/webprod/projects/porfolio/.env /home/webprod/projects/porfolio/src /home/webprod/backups/$DB_DUMP_NAME
-s3cmd put /home/webprod/backups/porfolio-$TIME_SUFFIX.tar.gz s3://porfolio-backups/staging/
+docker cp portfolio_postgres_1:/backups/$DB_DUMP_NAME /home/webprod/backups/
+tar --exclude='media/thumbs' -zcvf /home/webprod/backups/portfolio-$TIME_SUFFIX.tar.gz /home/webprod/projects/portfolio/.env /home/webprod/projects/portfolio/src /home/webprod/backups/$DB_DUMP_NAME
 find /home/webprod/backups/*.gz -mtime +5 -exec rm {} \;
 docker compose -f docker-compose.prod.yml exec -T postgres cleanup 7
 ```

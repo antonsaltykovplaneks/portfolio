@@ -1,8 +1,6 @@
-from unittest.mock import patch, call
+from unittest.mock import patch
 from django.urls import reverse
 from django.test import TestCase
-from django.conf import settings
-from collections import namedtuple
 from ..models import User
 
 
@@ -88,12 +86,12 @@ class RegisterViewTests(BaseViewTests):
         )
 
     def test_form_render(self):
-        from ..forms import UserRegistrationForm
 
         response = self.client.get(reverse("register"))
         self.assertEqual(response.status_code, 302)
 
-    def test_form_validation(self):
+    @patch('accounts.views.send_email_celery_task.delay')
+    def test_form_validation(self, mock_send_email_task):
         response = self.client.post(
             reverse("register"),
             data={
@@ -105,6 +103,7 @@ class RegisterViewTests(BaseViewTests):
             follow=True,
         )
         self.assertEqual(response.status_code, 200)
+        mock_send_email_task.assert_called_once_with(User.objects.first().id)
 
         u = User.objects.get(email="blah@mail.com")
         self.assertEqual(u.name, "Emilia Clarke")

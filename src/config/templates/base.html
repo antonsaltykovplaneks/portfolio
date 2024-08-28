@@ -23,11 +23,28 @@
     </head>
     <body>
         {% include "_header.html" %}
+        {% if messages %}
+            <div class="position-fixed top-0 end-0 p-3" style="z-index: 1050;">
+                {% for message in messages %}
+                <div class="toast show align-items-center text-white bg-{{ message.tags }} border-0 mb-2" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            {{ message }}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        
         {% block base_content %}
         <div class="container mt-4">
             {% block content %}{% endblock %}
         </div>
         {% endblock %}
-        {% block extra_js %}{% endblock %}
+        <script src="{% static 'js/message_toast.js' %}"></script>
+        {% block extra_js %}
+        {% endblock %}
     </body>
 </html>

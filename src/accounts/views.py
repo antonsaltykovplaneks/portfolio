@@ -1,6 +1,7 @@
 from http.client import HTTPException
 from django.shortcuts import render, redirect, reverse
 from django.conf import settings
+from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.tokens import default_token_generator
@@ -37,7 +38,16 @@ def personal_information_edit_view(request):
     if request.method == "POST":
         form = EditUserForm(instance=user, data=request.POST, files=request.FILES)
         if form.is_valid():
+            if form.initial.get("email") != user.email:
+                user.is_verified = False
+                send_email_celery_task.delay(user.id)
+                messages.info(
+                    request,
+                    "Email verification link has been sent to your email address.",
+                )
+
             form.save()
+            messages.success(request, "Your personal information has been updated.")
             return redirect(reverse("personal_information"))
     else:
         form = EditUserForm(instance=user)
@@ -87,14 +97,22 @@ def register_view(request):
 
     if request.method == "POST":
         form_registration = UserRegistrationForm(request.POST)
-        form_login = UserAuthForm(request)
 
         if form_registration.is_valid():
             user = form_registration.save()
             user.backend = "django.contrib.auth.backends.ModelBackend"
             login(request, user)
             send_email_celery_task.delay(user.id)
+            messages.info(
+                request, "Email verification link has been sent to your email address."
+            )
             return redirect(reverse("index"))
+        else:
+            context = {
+                "form_login": UserAuthForm(),
+                "form_registration": form_registration,
+            }
+            return render(request, "accounts/auth.html", context)
 
     return redirect(reverse("login"))
 
@@ -113,7 +131,8 @@ def verify_email(request, uidb64, token):
     user = get_object_or_404(User, pk=uid)
 
     if default_token_generator.check_token(user, token):
-        user.email_verified = True
+        user.is_verified = True
+
         user.save()
         return HttpResponse("Email successfully verified!")
     else:

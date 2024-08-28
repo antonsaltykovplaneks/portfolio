@@ -102,8 +102,13 @@ class EditUserForm(forms.ModelForm):
         if self.instance.email == received_email:
             return received_email
         else:
-            uu = User.objects.filter(email=received_email).exclude(pk=self.instance.pk).exists()
-            if uu:
+            user_exist = (
+                User.objects.filter(email=received_email)
+                .exclude(pk=self.instance.pk)
+                .exists()
+            )
+
+            if user_exist:
                 raise forms.ValidationError(
                     _("This email address is already using by another user.")
                 )

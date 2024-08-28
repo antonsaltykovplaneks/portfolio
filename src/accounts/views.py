@@ -3,7 +3,6 @@ from django.shortcuts import render, redirect, reverse
 from django.conf import settings
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
@@ -12,7 +11,7 @@ from django.utils.http import urlsafe_base64_decode
 
 from accounts.connectors import LinkedInConnector
 from accounts.tasks import send_email_celery_task
-
+from accounts.models import User
 from .forms import EditUserForm, UserAuthForm, UserRegistrationForm
 
 
@@ -114,8 +113,8 @@ def verify_email(request, uidb64, token):
     user = get_object_or_404(User, pk=uid)
 
     if default_token_generator.check_token(user, token):
-        user.profile.email_verified = True
-        user.profile.save()
+        user.email_verified = True
+        user.save()
         return HttpResponse("Email successfully verified!")
     else:
         return HttpResponse("Invalid verification link.")

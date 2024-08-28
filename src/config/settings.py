@@ -216,11 +216,12 @@ SESSION_COOKIE_AGE = config(
 
 EMAIL_BACKEND = "anymail.backends.mailgun.EmailBackend"
 ANYMAIL = {
+    "MAILGUN_API_URL": "https://api.eu.mailgun.net/v3",
     "MAILGUN_API_KEY": f"{config('MALIGUN_API_KEY')}",
-    "MAILGUN_SENDER_DOMAIN": f"{config('MALIGUN_SUBDOMAIN')}.mailgun.org",
+    "MAILGUN_SENDER_DOMAIN": f"{config('MALIGUN_SUBDOMAIN')}",
 }
-DEFAULT_FROM_EMAIL = f"mailgun@{config('MALIGUN_SUBDOMAIN')}.mailgun.org"
-SERVER_EMAIL = f"mailgun@{config('MALIGUN_SUBDOMAIN')}.mailgun.org"
+DEFAULT_FROM_EMAIL = f"mailgun@{config('MALIGUN_SUBDOMAIN')}.planeks.org"
+SERVER_EMAIL = f"mailgun@{config('MALIGUN_SUBDOMAIN')}.planeks.org"
 
 CACHES = {
     "default": {

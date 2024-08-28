@@ -83,6 +83,11 @@ class User(AbstractBaseUser, PermissionsMixin):
             "Unselect this instead of deleting accounts."
         ),
     )
+    is_linkedin_user = models.BooleanField(
+        _("LinkedIn user"),
+        default=False,
+        help_text=_("Designates whether the user is a LinkedIn user."),
+    )
 
     date_joined = models.DateTimeField(_("Date joined"), default=timezone.now)
 

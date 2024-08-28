@@ -25,7 +25,7 @@ def generate_verification_link(user: User) -> str:
     token = default_token_generator.make_token(user)
     subdomain = config("MALIGUN_SUBDOMAIN")
     verification_link = reverse("verify_email", kwargs={"uidb64": uid, "token": token})
-    return f"https://{subdomain}.planeks.org/{verification_link}"
+    return f"https://{subdomain}{verification_link}"
 
 
 @shared_task

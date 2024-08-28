@@ -1,19 +1,18 @@
+from http.client import HTTPException
 from django.shortcuts import render, redirect, reverse
 from django.conf import settings
-from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse
+from django.shortcuts import get_object_or_404
 
 from django.utils.http import urlsafe_base64_decode
 
+from accounts.connectors import LinkedInConnector
 from accounts.tasks import send_email_celery_task
-
+from accounts.models import User
 from .forms import EditUserForm, UserAuthForm, UserRegistrationForm
-
 
 
 @login_required
@@ -114,8 +113,24 @@ def verify_email(request, uidb64, token):
     user = get_object_or_404(User, pk=uid)
 
     if default_token_generator.check_token(user, token):
-        user.profile.email_verified = True
-        user.profile.save()
+        user.email_verified = True
+        user.save()
         return HttpResponse("Email successfully verified!")
     else:
         return HttpResponse("Invalid verification link.")
+
+
+def linkedin_login(request):
+    return LinkedInConnector.login_to_provider()
+
+
+def linkedin_login_callback(request):
+    if request.method == "GET":
+        try:
+            LinkedInConnector.login(request)
+            return redirect(reverse("index"))
+        except HTTPException as e:
+            print(f"LinkedIn login error: {e}")
+            # messages.error(request, "LinkedIn login failed", "error") # after PR merge
+            return render(request, "error_register_login_failed.html")
+    return redirect(reverse("login_register"))

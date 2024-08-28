@@ -216,11 +216,12 @@ SESSION_COOKIE_AGE = config(
 
 EMAIL_BACKEND = "anymail.backends.mailgun.EmailBackend"
 ANYMAIL = {
+    "MAILGUN_API_URL": "https://api.eu.mailgun.net/v3",
     "MAILGUN_API_KEY": f"{config('MALIGUN_API_KEY')}",
-    "MAILGUN_SENDER_DOMAIN": f"{config('MALIGUN_SUBDOMAIN')}.mailgun.org",
+    "MAILGUN_SENDER_DOMAIN": f"{config('MALIGUN_SUBDOMAIN')}",
 }
-DEFAULT_FROM_EMAIL = f"mailgun@{config('MALIGUN_SUBDOMAIN')}.mailgun.org"
-SERVER_EMAIL = f"mailgun@{config('MALIGUN_SUBDOMAIN')}.mailgun.org"
+DEFAULT_FROM_EMAIL = f"mailgun@{config('MALIGUN_SUBDOMAIN')}.planeks.org"
+SERVER_EMAIL = f"mailgun@{config('MALIGUN_SUBDOMAIN')}.planeks.org"
 
 CACHES = {
     "default": {
@@ -230,7 +231,17 @@ CACHES = {
     },
 }
 
-MINIMUM_PASSWORD_LENGTH = config('MINIMUM_PASSWORD_LENGTH', default=6, cast=int)
+LINKEDIN_CLIENT_ID = config("SOCIAL_AUTH_LINKEDIN_OAUTH2_KEY")
+LINKEDIN_CLIENT_SECRET = config("SOCIAL_AUTH_LINKEDIN_OAUTH2_SECRET")
+LINKEDIN_REDIRECT_URL = "linkedin_callback"
+LINKEDIN_AUTHORIZATION_URL = "https://www.linkedin.com/oauth/v2/authorization/?"
+LINKEDIN_ACCESS_TOKEN_URL = "https://www.linkedin.com/oauth/v2/accessToken"
+LINKEDIN_PROFILE_URL = "https://api.linkedin.com/v2/userinfo"
+LINKEDIN_STATE = config("LINKEDIN_STATE", default="VBnaEeFW62A53dzsdf424")
+LINKEDIN_SCOPE = "profile,email,openid"
+LINKEDIN_GRANT_TYPE = "authorization_code"
+
+MINIMUM_PASSWORD_LENGTH = config("MINIMUM_PASSWORD_LENGTH", default=6, cast=int)
 
 if CONFIGURATION == "prod":
     MIDDLEWARE.insert(1, "whitenoise.middleware.WhiteNoiseMiddleware")

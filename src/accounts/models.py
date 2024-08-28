@@ -89,6 +89,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         help_text=_("Designates whether the user is a LinkedIn user."),
     )
 
+    company_id = models.IntegerField(null=True, blank=True)
     date_joined = models.DateTimeField(_("Date joined"), default=timezone.now)
 
     objects = UserManager()

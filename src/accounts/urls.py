@@ -1,4 +1,4 @@
-from django.urls import path, re_path, reverse_lazy
+from django.urls import path, reverse_lazy
 from django.contrib.auth import views as auth_views
 from . import views
 
@@ -63,5 +63,19 @@ urlpatterns = [
         views.personal_information_edit_view,
         name="edit_personal_information",
     ),
-    path("verify-email/<uidb64>/<token>/", views.verify_email, name="verify_email"),
+    path(
+        "verify-email/<uidb64>/<token>/",
+        views.verify_email,
+        name="verify_email",
+    ),
+    path(
+        "linkedin/login/",
+        views.linkedin_login,
+        name="linkedin_login",
+    ),
+    path(
+        "linkedin/login/callback/",
+        views.linkedin_login_callback,
+        name="linkedin_callback",
+    ),
 ]

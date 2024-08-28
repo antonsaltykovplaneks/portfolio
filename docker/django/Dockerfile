@@ -37,7 +37,8 @@ COPY --chown=appuser:appuser ./src /opt/project/src
 
 RUN mkdir /data
 RUN chown -R appuser:appuser /data
-RUN chmod 775 /data
+RUN chmod a+rwx /data
+RUN chmod -R 775 /data
 RUN chmod g+s /data
 
 USER appuser

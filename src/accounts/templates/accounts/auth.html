@@ -13,7 +13,9 @@
                 <h1 class="mb-4">{% trans "Login" %}</h1>
                 <form method="post" action="{% url 'login' %}">
                     <input type="hidden" name="next" value="{{ next }}" />
-                    
+                    <p> 
+                        <a href="{% url 'linkedin_login' %}"> LinkedIn Login </a>
+                    </p>
                     {% csrf_token %}
                     {% include "forms/form_fields.html" with form=form_login hide_required_badges=True %}
                     <div class="form-group">

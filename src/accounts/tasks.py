@@ -36,4 +36,3 @@ def send_email_celery_task(user_id: int):
         [user.email],
         html_message=html_message,
     )
-    print('ok')

@@ -1,0 +1,282 @@
+[
+    {
+        "model": "infrastructure.industry",
+        "pk": 12,
+        "fields": {
+            "title": "Technology"
+        }
+    },
+    {
+        "model": "infrastructure.industry",
+        "pk": 13,
+        "fields": {
+            "title": "Healthcare"
+        }
+    },
+    {
+        "model": "infrastructure.industry",
+        "pk": 14,
+        "fields": {
+            "title": "Finance"
+        }
+    },
+    {
+        "model": "infrastructure.industry",
+        "pk": 15,
+        "fields": {
+            "title": "Education"
+        }
+    },
+    {
+        "model": "infrastructure.industry",
+        "pk": 16,
+        "fields": {
+            "title": "Manufacturing"
+        }
+    },
+    {
+        "model": "infrastructure.industry",
+        "pk": 17,
+        "fields": {
+            "title": "Retail"
+        }
+    },
+    {
+        "model": "infrastructure.industry",
+        "pk": 18,
+        "fields": {
+            "title": "Transportation"
+        }
+    },
+    {
+        "model": "infrastructure.industry",
+        "pk": 19,
+        "fields": {
+            "title": "Construction"
+        }
+    },
+    {
+        "model": "infrastructure.industry",
+        "pk": 20,
+        "fields": {
+            "title": "Energy"
+        }
+    },
+    {
+        "model": "infrastructure.industry",
+        "pk": 21,
+        "fields": {
+            "title": "Telecommunications"
+        }
+    },
+    {
+        "model": "infrastructure.industry",
+        "pk": 22,
+        "fields": {
+            "title": "Agriculture"
+        }
+    },
+    {
+        "model": "infrastructure.industry",
+        "pk": 23,
+        "fields": {
+            "title": "Automotive"
+        }
+    },
+    {
+        "model": "infrastructure.industry",
+        "pk": 24,
+        "fields": {
+            "title": "Aerospace"
+        }
+    },
+    {
+        "model": "infrastructure.industry",
+        "pk": 25,
+        "fields": {
+            "title": "Pharmaceutical"
+        }
+    },
+    {
+        "model": "infrastructure.industry",
+        "pk": 26,
+        "fields": {
+            "title": "Biotechnology"
+        }
+    },
+    {
+        "model": "infrastructure.industry",
+        "pk": 27,
+        "fields": {
+            "title": "Food and Beverage"
+        }
+    },
+    {
+        "model": "infrastructure.industry",
+        "pk": 28,
+        "fields": {
+            "title": "Hospitality"
+        }
+    },
+    {
+        "model": "infrastructure.industry",
+        "pk": 29,
+        "fields": {
+            "title": "Real Estate"
+        }
+    },
+    {
+        "model": "infrastructure.industry",
+        "pk": 30,
+        "fields": {
+            "title": "Insurance"
+        }
+    },
+    {
+        "model": "infrastructure.industry",
+        "pk": 31,
+        "fields": {
+            "title": "Media"
+        }
+    },
+    {
+        "model": "infrastructure.industry",
+        "pk": 32,
+        "fields": {
+            "title": "Entertainment"
+        }
+    },
+    {
+        "model": "infrastructure.industry",
+        "pk": 33,
+        "fields": {
+            "title": "Legal"
+        }
+    },
+    {
+        "model": "infrastructure.industry",
+        "pk": 34,
+        "fields": {
+            "title": "Consulting"
+        }
+    },
+    {
+        "model": "infrastructure.industry",
+        "pk": 35,
+        "fields": {
+            "title": "Nonprofit"
+        }
+    },
+    {
+        "model": "infrastructure.industry",
+        "pk": 36,
+        "fields": {
+            "title": "Government"
+        }
+    },
+    {
+        "model": "infrastructure.industry",
+        "pk": 37,
+        "fields": {
+            "title": "Mining"
+        }
+    },
+    {
+        "model": "infrastructure.industry",
+        "pk": 38,
+        "fields": {
+            "title": "Chemicals"
+        }
+    },
+    {
+        "model": "infrastructure.industry",
+        "pk": 39,
+        "fields": {
+            "title": "Textiles"
+        }
+    },
+    {
+        "model": "infrastructure.industry",
+        "pk": 40,
+        "fields": {
+            "title": "Apparel"
+        }
+    },
+    {
+        "model": "infrastructure.industry",
+        "pk": 41,
+        "fields": {
+            "title": "Electronics"
+        }
+    },
+    {
+        "model": "infrastructure.industry",
+        "pk": 42,
+        "fields": {
+            "title": "Furniture"
+        }
+    },
+    {
+        "model": "infrastructure.industry",
+        "pk": 43,
+        "fields": {
+            "title": "Toys"
+        }
+    },
+    {
+        "model": "infrastructure.industry",
+        "pk": 44,
+        "fields": {
+            "title": "Sports"
+        }
+    },
+    {
+        "model": "infrastructure.industry",
+        "pk": 45,
+        "fields": {
+            "title": "Logistics"
+        }
+    },
+    {
+        "model": "infrastructure.industry",
+        "pk": 46,
+        "fields": {
+            "title": "Publishing"
+        }
+    },
+    {
+        "model": "infrastructure.industry",
+        "pk": 47,
+        "fields": {
+            "title": "Advertising"
+        }
+    },
+    {
+        "model": "infrastructure.industry",
+        "pk": 48,
+        "fields": {
+            "title": "Architecture"
+        }
+    },
+    {
+        "model": "infrastructure.industry",
+        "pk": 49,
+        "fields": {
+            "title": "Engineering"
+        }
+    },
+    {
+        "model": "infrastructure.industry",
+        "pk": 50,
+        "fields": {
+            "title": "Design"
+        }
+    },
+    {
+        "model": "infrastructure.industry",
+        "pk": 51,
+        "fields": {
+            "title": "Research"
+        }
+    }
+]

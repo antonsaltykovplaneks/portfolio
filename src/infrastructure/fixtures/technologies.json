@@ -1,0 +1,282 @@
+[
+    {
+        "model": "infrastructure.technology",
+        "pk": 13,
+        "fields": {
+            "title": "Python"
+        }
+    },
+    {
+        "model": "infrastructure.technology",
+        "pk": 14,
+        "fields": {
+            "title": "JavaScript"
+        }
+    },
+    {
+        "model": "infrastructure.technology",
+        "pk": 15,
+        "fields": {
+            "title": "React"
+        }
+    },
+    {
+        "model": "infrastructure.technology",
+        "pk": 16,
+        "fields": {
+            "title": "Node.js"
+        }
+    },
+    {
+        "model": "infrastructure.technology",
+        "pk": 17,
+        "fields": {
+            "title": "Angular"
+        }
+    },
+    {
+        "model": "infrastructure.technology",
+        "pk": 18,
+        "fields": {
+            "title": "Vue.js"
+        }
+    },
+    {
+        "model": "infrastructure.technology",
+        "pk": 19,
+        "fields": {
+            "title": "Ruby on Rails"
+        }
+    },
+    {
+        "model": "infrastructure.technology",
+        "pk": 20,
+        "fields": {
+            "title": "Laravel"
+        }
+    },
+    {
+        "model": "infrastructure.technology",
+        "pk": 21,
+        "fields": {
+            "title": "Spring"
+        }
+    },
+    {
+        "model": "infrastructure.technology",
+        "pk": 22,
+        "fields": {
+            "title": "Flask"
+        }
+    },
+    {
+        "model": "infrastructure.technology",
+        "pk": 23,
+        "fields": {
+            "title": "Django"
+        }
+    },
+    {
+        "model": "infrastructure.technology",
+        "pk": 24,
+        "fields": {
+            "title": "ASP.NET"
+        }
+    },
+    {
+        "model": "infrastructure.technology",
+        "pk": 25,
+        "fields": {
+            "title": "Express"
+        }
+    },
+    {
+        "model": "infrastructure.technology",
+        "pk": 26,
+        "fields": {
+            "title": "Kotlin"
+        }
+    },
+    {
+        "model": "infrastructure.technology",
+        "pk": 27,
+        "fields": {
+            "title": "Swift"
+        }
+    },
+    {
+        "model": "infrastructure.technology",
+        "pk": 28,
+        "fields": {
+            "title": "Objective-C"
+        }
+    },
+    {
+        "model": "infrastructure.technology",
+        "pk": 29,
+        "fields": {
+            "title": "C++"
+        }
+    },
+    {
+        "model": "infrastructure.technology",
+        "pk": 30,
+        "fields": {
+            "title": "C#"
+        }
+    },
+    {
+        "model": "infrastructure.technology",
+        "pk": 31,
+        "fields": {
+            "title": "Java"
+        }
+    },
+    {
+        "model": "infrastructure.technology",
+        "pk": 32,
+        "fields": {
+            "title": "Go"
+        }
+    },
+    {
+        "model": "infrastructure.technology",
+        "pk": 33,
+        "fields": {
+            "title": "Rust"
+        }
+    },
+    {
+        "model": "infrastructure.technology",
+        "pk": 34,
+        "fields": {
+            "title": "TypeScript"
+        }
+    },
+    {
+        "model": "infrastructure.technology",
+        "pk": 35,
+        "fields": {
+            "title": "PHP"
+        }
+    },
+    {
+        "model": "infrastructure.technology",
+        "pk": 36,
+        "fields": {
+            "title": "SQL"
+        }
+    },
+    {
+        "model": "infrastructure.technology",
+        "pk": 37,
+        "fields": {
+            "title": "GraphQL"
+        }
+    },
+    {
+        "model": "infrastructure.technology",
+        "pk": 38,
+        "fields": {
+            "title": "Docker"
+        }
+    },
+    {
+        "model": "infrastructure.technology",
+        "pk": 39,
+        "fields": {
+            "title": "Kubernetes"
+        }
+    },
+    {
+        "model": "infrastructure.technology",
+        "pk": 40,
+        "fields": {
+            "title": "Terraform"
+        }
+    },
+    {
+        "model": "infrastructure.technology",
+        "pk": 41,
+        "fields": {
+            "title": "Ansible"
+        }
+    },
+    {
+        "model": "infrastructure.technology",
+        "pk": 42,
+        "fields": {
+            "title": "Puppet"
+        }
+    },
+    {
+        "model": "infrastructure.technology",
+        "pk": 43,
+        "fields": {
+            "title": "Chef"
+        }
+    },
+    {
+        "model": "infrastructure.technology",
+        "pk": 44,
+        "fields": {
+            "title": "Jenkins"
+        }
+    },
+    {
+        "model": "infrastructure.technology",
+        "pk": 45,
+        "fields": {
+            "title": "Travis CI"
+        }
+    },
+    {
+        "model": "infrastructure.technology",
+        "pk": 46,
+        "fields": {
+            "title": "CircleCI"
+        }
+    },
+    {
+        "model": "infrastructure.technology",
+        "pk": 47,
+        "fields": {
+            "title": "Git"
+        }
+    },
+    {
+        "model": "infrastructure.technology",
+        "pk": 48,
+        "fields": {
+            "title": "GitHub"
+        }
+    },
+    {
+        "model": "infrastructure.technology",
+        "pk": 49,
+        "fields": {
+            "title": "GitLab"
+        }
+    },
+    {
+        "model": "infrastructure.technology",
+        "pk": 50,
+        "fields": {
+            "title": "Bitbucket"
+        }
+    },
+    {
+        "model": "infrastructure.technology",
+        "pk": 51,
+        "fields": {
+            "title": "AWS"
+        }
+    },
+    {
+        "model": "infrastructure.technology",
+        "pk": 52,
+        "fields": {
+            "title": "Azure"
+        }
+    }
+]

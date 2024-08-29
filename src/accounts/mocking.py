@@ -106,7 +106,7 @@ class UserFactory:
         """
         with open(file_path, "r") as file:
             users_json = json.loads(file.read())
-        for user_json in users_json:
+        for user_json in json.loads(users_json):
             is_active = user_json["fields"].pop("is_active")
             date_joined = user_json["fields"].pop("date_joined")
             last_login = user_json["fields"].pop("last_login")

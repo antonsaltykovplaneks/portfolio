@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     # Add the apps here
     "core",
     "accounts",
+    "infrastructure",
     "anymail",
 ]
 

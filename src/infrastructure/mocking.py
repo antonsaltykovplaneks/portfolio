@@ -113,17 +113,17 @@ def create_project(
     title: str = None,
     description: str = None,
     user_id: int = None,
-    industry_id: int = None,
-    technology_id: int = None,
+    industry_ids: List[int] = None,
+    technology_ids: List[int] = None,
 ) -> Project:
     """Create a project object. Uses Faker to generate random data if not provided.
 
     Args:
         title (str, optional). Defaults to None.
         description (str, optional). Defaults to None.
-        user_id (int, optional). Defaults to None. Acquires a random user if not provided. Creates users if they are not exists.
-        industry_id (int, optional). Defaults to None. Acquires a random industry if not provided. Creates industries if they are not exists.
-        technology_id (int, optional). Defaults to None. Acquires a random technology if not provided. Creates technologies if they are not exists.
+        user_id (int, optional). Defaults to None. Acquires a random user if not provided. Creates Users if they are not exists.
+        industry_id (List[int], optional). Defaults to None. Acquires a random industry if not provided. Creates Industries if they are not exists.
+        technology_id (List[int], optional). Defaults to None. Acquires a random technology if not provided. Creates Technologies if they are not exists.
 
     Returns:
         Project: object of Project
@@ -143,23 +143,27 @@ def create_project(
 
     industry_exists = Industry.objects.exists()
     if not industry_exists:
-        create_industry()
+        create_industries()
 
-    if industry_id:
-        object_fields["industry"] = Industry.objects.get(id=industry_id)
+    if industry_ids:
+        industries = Industry.objects.filter(id__in=industry_ids).all()
     else:
-        object_fields["industry"] = random.choice(Industry.objects.all())
+        industries = random.sample(list(Industry.objects.all()), random.randint(1, 3))
 
     technology_exists = Technology.objects.exists()
     if not technology_exists:
         create_technologies()
 
-    if technology_id:
-        object_fields["technology"] = Technology.objects.get(id=technology_id)
+    if technology_ids:
+        technologies = Technology.objects.filter(id__in=technology_ids).all()
     else:
-        object_fields["technology"] = random.choice(Technology.objects.all())
+        technologies = random.sample(
+            list(Technology.objects.all()), random.randint(1, 3)
+        )
 
     project = Project.objects.create(**object_fields)
+    project.industries.set(industries)
+    project.technologies.set(technologies)
     return project
 
 

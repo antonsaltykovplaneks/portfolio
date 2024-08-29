@@ -1,4 +1,5 @@
 import datetime
+import random
 from typing import List
 
 from faker import Faker
@@ -40,16 +41,23 @@ def create_user(
     object_fields["name"] = name or fake.name()
     object_fields["password"] = password or fake.password()
     object_fields["is_linkedin_user"] = (
-        is_linkedin_user if is_linkedin_user is not None else fake.boolean()
+        is_linkedin_user
+        if is_linkedin_user is not None
+        else random.choice([True, False])
     )
     object_fields["is_verified"] = (
-        is_verified if is_verified is not None else fake.boolean
+        is_verified if is_verified is not None else random.choice([True, False])
     )
-    object_fields["is_active"] = is_active if is_active is not None else fake.boolean()
-    object_fields["date_joined"] = date_joined or fake.date_time_this_year()
-    object_fields["last_login"] = last_login or fake.date_time_this_year()
+    is_active = is_active if is_active is not None else random.choice([True, False])
+    date_joined = date_joined or fake.date_time_this_year()
+    last_login = last_login or fake.date_time_this_year()
 
     user = User.objects.create_user(**object_fields)
+    user.is_active = is_active
+    user.date_joined = date_joined
+    user.last_login = last_login
+    user.save()
+
     return user
 
 

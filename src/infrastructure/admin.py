@@ -1,15 +1,5 @@
 from django.contrib import admin
 
-from .forms import (
-    CompanyCreateForm,
-    CompanyEditForm,
-    IndustryCreateForm,
-    IndustryEditForm,
-    ProjectCreateForm,
-    ProjectEditForm,
-    TechnologyCreateForm,
-    TechnologyEditForm,
-)
 from .models import Company, Industry, Project, Technology
 
 
@@ -23,9 +13,6 @@ class CompanyAdmin(admin.ModelAdmin):
     list_filter = ("title",)
     ordering = ("title",)
 
-    form = CompanyEditForm
-    add_form = CompanyCreateForm
-
 
 @admin.register(Industry)
 class IndustryAdmin(admin.ModelAdmin):
@@ -37,9 +24,6 @@ class IndustryAdmin(admin.ModelAdmin):
     list_filter = ("title",)
     ordering = ("title",)
 
-    form = IndustryEditForm
-    add_form = IndustryCreateForm
-
 
 @admin.register(Technology)
 class TechnologyAdmin(admin.ModelAdmin):
@@ -50,9 +34,6 @@ class TechnologyAdmin(admin.ModelAdmin):
     list_display = ("title",)
     list_filter = ("title",)
     ordering = ("title",)
-
-    form = TechnologyEditForm
-    add_form = TechnologyCreateForm
 
 
 @admin.register(Project)
@@ -84,5 +65,3 @@ class ProjectAdmin(admin.ModelAdmin):
     )
 
     readonly_fields = ("created_at", "updated_at")
-    form = ProjectEditForm
-    add_form = ProjectCreateForm

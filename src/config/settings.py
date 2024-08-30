@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     # 'polymorphic',
     # 'channels',
     "django_extensions",
+    "import_export",
     # Add the apps here
     "core",
     "accounts",

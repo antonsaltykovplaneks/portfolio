@@ -1,4 +1,14 @@
-from django.contrib import admin
+import tablib
+
+from django import forms
+from django.contrib import admin, messages
+from django.template.response import TemplateResponse
+from import_export import fields, resources, widgets
+from import_export.admin import ImportExportModelAdmin
+from import_export.forms import ImportForm
+from import_export.formats.base_formats import TextFormat, CSV
+
+from accounts.models import User
 
 from .models import Company, Industry, Project, Technology
 
@@ -36,32 +46,172 @@ class TechnologyAdmin(admin.ModelAdmin):
     ordering = ("title",)
 
 
+class ManyToManyCommaWidget(widgets.ManyToManyWidget):
+    def __init__(self, model, field="title", separator=","):
+        super().__init__(model, field=field, separator=separator)
+
+    def clean(self, value, row=None, *args, **kwargs):
+        if isinstance(value, str):
+            return [item.strip() for item in value.split(self.separator)]
+        return value
+
+
+class ProjectResource(resources.ModelResource):
+    user_id = fields.Field(
+        column_name="user_id",
+        attribute="user",
+        widget=widgets.ForeignKeyWidget(User, "id"),
+        default=None,
+    )
+
+    industries = fields.Field(
+        attribute="industries",
+        widget=ManyToManyCommaWidget(Industry, field="title"),
+    )
+    technologies = fields.Field(
+        attribute="technologies",
+        widget=ManyToManyCommaWidget(Technology, field="title"),
+    )
+
+    class Meta:
+        model = Project
+        fields = (
+            "user_id",
+            "title",
+            "description",
+            "industries",
+            "technologies",
+        )
+
+        export_order = (
+            "id",
+            "title",
+            "description",
+            "created_at",
+            "updated_at",
+            "user__name",
+            "user__email",
+            "user__company__title",
+            "user__date_joined",
+            "industries",
+            "technologies",
+        )
+
+    def get_import_id_fields(self):
+        return ["user_id", "title"]
+
+    def before_import(self, dataset, **kwargs):
+        super().before_import(dataset, **kwargs)
+        dataset.append_col([kwargs.get("user_id")], header="user_id")
+
+    def before_import_row(self, row, row_number=None, **kwargs):
+        technologies = row.get("technologies")
+        if technologies:
+            row["technologies"] = [
+                Technology.objects.get_or_create(title=tech)[0].id
+                for tech in technologies.split(",")
+            ]
+
+        industries = row.get("industries")
+        if industries:
+            row["industries"] = [
+                Industry.objects.get_or_create(title=ind)[0].id
+                for ind in industries.split(",")
+            ]
+
+        user_id = kwargs.get("user_id")
+        if user_id:
+            row["user_id"] = user_id
+
+    def after_init_instance(self, instance, new, row, **kwargs):
+        user_id = row.get("user_id")
+        if user_id:
+            instance.user_id = user_id
+            instance.save()
+
+
+class UserSelectForm(ImportForm):
+    user = forms.ModelChoiceField(
+        queryset=User.objects.all(), required=False, label="Select User"
+    )
+
+
+class SemicolonCSV(TextFormat):
+    TABLIB_MODULE = "tablib.formats._csv"
+    CONTENT_TYPE = "text/csv"
+
+    def create_dataset(self, in_stream, **kwargs):
+        dataset = super().create_dataset(in_stream, **kwargs)
+        dataset = tablib.Dataset().load(in_stream, format="csv", delimiter=";")
+        return dataset
+
+    def export_data(self, dataset, **kwargs):
+        return dataset.export("csv", delimiter=";")
+
+
 @admin.register(Project)
-class ProjectAdmin(admin.ModelAdmin):
+class ProjectAdmin(ImportExportModelAdmin):
+    resource_class = ProjectResource
     list_display = ("title", "created_at", "updated_at", "user")
     list_filter = ("title", "created_at", "updated_at", "user")
     search_fields = ("title", "description")
     ordering = ("title",)
     filter_horizontal = ("industries", "technologies")
-
-    fieldsets = (
-        (
-            None,
-            {
-                "fields": (
-                    "title",
-                    "description",
-                    "image",
-                    "user",
-                    "industries",
-                    "technologies",
-                )
-            },
-        ),
-        (
-            "Timestamps",
-            {"fields": ("created_at", "updated_at"), "classes": ("collapse",)},
-        ),
-    )
-
     readonly_fields = ("created_at", "updated_at")
+
+    def get_export_formats(self):
+        formats = super().get_export_formats()
+        for i, format_class in enumerate(formats):
+            if format_class is CSV:
+                formats[i] = SemicolonCSV
+        return formats
+
+    def get_import_formats(self):
+        formats = super().get_import_formats()
+        for i, format_class in enumerate(formats):
+            if format_class is CSV:
+                formats[i] = SemicolonCSV
+        return formats
+
+    def import_action(self, request, *args, **kwargs):
+        user_form = UserSelectForm(formats=[CSV], resources=[ProjectResource])
+
+        if request.method == "POST":
+
+            user_form = UserSelectForm(
+                formats=[CSV],
+                files=request.FILES,
+                resources=[ProjectResource],
+                data={"user": request.POST.get("user"), "format": "0"},
+            )
+
+            if user_form.is_valid():
+                file = request.FILES["import_file"]
+                data = file.read().decode("utf-8")
+
+                dataset = self.get_import_formats()[0]().create_dataset(
+                    data, delimiter=";"
+                )
+                result = self.process_dataset(
+                    dataset,
+                    request=request,
+                    form=user_form,
+                    user_id=user_form.cleaned_data["user"].id,
+                    *args,
+                    **kwargs,
+                )
+                print(f"Result: {result.totals}")
+                if not result.has_errors() and not result.has_validation_errors():
+                    messages.success(request, "Import successful!")
+                    return self.process_result(result, request)
+                else:
+                    messages.error(request, "Import failed due to errors.")
+
+        context = self.get_import_context_data(**kwargs)
+        context["form"] = user_form
+        return TemplateResponse(request, self.import_template_name, context)
+
+    def get_import_context_data(self, **kwargs):
+        context = super().get_import_context_data(**kwargs)
+        context["opts"] = self.model._meta
+        return context

@@ -1,12 +1,11 @@
 import tablib
-
 from django import forms
 from django.contrib import admin, messages
 from django.template.response import TemplateResponse
 from import_export import fields, resources, widgets
 from import_export.admin import ImportExportModelAdmin
+from import_export.formats.base_formats import CSV, TextFormat
 from import_export.forms import ImportForm
-from import_export.formats.base_formats import TextFormat, CSV
 
 from accounts.models import User
 
@@ -177,7 +176,6 @@ class ProjectAdmin(ImportExportModelAdmin):
         user_form = UserSelectForm(formats=[CSV], resources=[ProjectResource])
 
         if request.method == "POST":
-
             user_form = UserSelectForm(
                 formats=[CSV],
                 files=request.FILES,

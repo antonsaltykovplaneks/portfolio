@@ -309,12 +309,3 @@ class ProjectFactory:
             project = Project.objects.create(**project_json["fields"])
             project.industries.set(industries)
             project.technologies.set(technologies)
-    
-    @staticmethod
-    def import_data(data):
-        for project in data:
-            project["fields"]["user"] = User.objects.get(id=project["fields"]["user"])
-            industries = [
-                Industry.objects.get(id=industry_id)
-                for industry_id in project
-            ]

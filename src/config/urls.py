@@ -12,6 +12,7 @@ urlpatterns = [
     path("superadmin/", admin.site.urls),
     path("", include("accounts.urls")),
     path("", include("core.urls")),
+    path("", include("infrastructure.urls")),
 ]
 
 # For debug mode only

@@ -8,37 +8,42 @@
 {% block base_content %}
 <main class="auth mt-5">
     <div class="container">
-        <div class="row justify-content-between">
-            <div class="col-auto">
-                <h1 class="mb-4">{% trans "Login" %}</h1>
-                <form method="post" action="{% url 'login' %}">
-                    <input type="hidden" name="next" value="{{ next }}" />
-                    <p> 
-                        <a href="{% url 'linkedin_login' %}"> LinkedIn Login </a>
-                    </p>
-                    {% csrf_token %}
-                    {% include "forms/form_fields.html" with form=form_login hide_required_badges=True %}
-                    <div class="form-group">
-                        <button class="btn btn-lg btn-primary btn-block" type="submit" name="login_submit">{% trans "Login" %}</button>
+        <div class="row justify-content-center">
+            <div class="col-md-5">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h2 class="text-center mb-4">{% trans "Login" %}</h2>
+                        <form method="post" action="{% url 'login' %}">
+                            <input type="hidden" name="next" value="{{ next }}" />
+                            <div class="mb-3 text-center">
+                                <a href="{% url 'linkedin_login' %}" class="btn btn-outline-primary btn-block">
+                                    <i class="fab fa-linkedin"></i> LinkedIn Login
+                                </a>
+                            </div>
+                            {% csrf_token %}
+                            {% include "forms/form_fields.html" with form=form_login hide_required_badges=True %}
+                            <div class="form-group">
+                                <button class="btn btn-lg btn-primary btn-block" type="submit" name="login_submit">{% trans "Login" %}</button>
+                            </div>
+                        </form>
                     </div>
-
-                </form>
+                </div>
             </div>
 
-            <div class="col-auto pr-3">
-                <h1 class="mb-4">{% trans "Register" %}</h1>
-                
-                <form method="post" action="{% url 'register' %}">
-                    <input type="hidden" name="next" value="{{ next }}" />
-                
-                    {% csrf_token %}
-                    {% include "forms/form_fields.html" with form=form_registration hide_required_badges=True %}
-                
-                    <div class="form-group">
-                        <button class="btn btn-lg btn-primary btn-block" type="submit" name="register_submit">{% trans "Register" %}</button>
+            <div class="col-md-5 mt-4 mt-md-0">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h2 class="text-center mb-4">{% trans "Register" %}</h2>
+                        <form method="post" action="{% url 'register' %}">
+                            <input type="hidden" name="next" value="{{ next }}" />
+                            {% csrf_token %}
+                            {% include "forms/form_fields.html" with form=form_registration hide_required_badges=True %}
+                            <div class="form-group">
+                                <button class="btn btn-lg btn-primary btn-block" type="submit" name="register_submit">{% trans "Register" %}</button>
+                            </div>
+                        </form>
                     </div>
-                
-                </form>
+                </div>
             </div>
         </div>
     </div>

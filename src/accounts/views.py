@@ -14,12 +14,20 @@ from django.urls import reverse_lazy
 from django.utils.http import urlsafe_base64_decode
 from django.contrib.auth.views import PasswordResetView
 from django.utils.translation import gettext_lazy as _
-
+from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.views import PasswordContextMixin
+from django.views.generic.edit import FormView
+from django.views.decorators.debug import sensitive_post_parameters
 
 from accounts.connectors import LinkedInConnector
 from accounts.tasks import send_email_celery_task
 from accounts.models import User
-from .forms import EditUserForm, UserAuthForm, UserRegistrationForm
+from .forms import (
+    EditUserForm,
+    UserAuthForm,
+    UserRegistrationForm,
+    CustomPasswordChangeForm,
+)
 
 
 @login_required
@@ -199,4 +207,31 @@ class PasswordResetModifiedView(PasswordResetView):
             "extra_email_context": self.extra_email_context,
         }
         form.save(**opts)
+        return super().form_valid(form)
+
+
+class PasswordCreateView(PasswordContextMixin, FormView):
+    form_class = CustomPasswordChangeForm  # Use the custom form
+    success_url = reverse_lazy("index")
+    template_name = "accounts/password_change_form.html"
+    title = _("Password change")
+
+    @method_decorator(sensitive_post_parameters())
+    @method_decorator(csrf_protect)
+    @method_decorator(login_required)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.request.user
+        return kwargs
+
+    def form_valid(self, form):
+        form.save()
+        update_session_auth_hash(self.request, form.user)
+        messages.success(
+            self.request, _("Your password has been successfully changed.")
+        )
+
         return super().form_valid(form)

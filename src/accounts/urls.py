@@ -8,6 +8,13 @@ urlpatterns = [
     path("logout/", views.logout_view, name="logout"),
     path("register/", views.register_view, name="register"),
     path(
+        "password-create/",
+        views.PasswordCreateView.as_view(
+            template_name="accounts/password_create_form.html",
+        ),
+        name="password_create",
+    ),
+    path(
         "password-change/",
         auth_views.PasswordChangeView.as_view(
             template_name="accounts/password_change_form.html",

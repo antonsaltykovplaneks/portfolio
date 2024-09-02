@@ -102,8 +102,10 @@ class ProjectResource(resources.ModelResource):
     def before_import(self, dataset, **kwargs):
         super().before_import(dataset, **kwargs)
         # Append a column for user_id with the value provided in kwargs
-        # Avoids exception about different number of columns in header and row
-        dataset.append_col([kwargs.get("user_id")], header="user_id")
+        # Avoids Dimension Error
+        dataset.append_col(
+            [kwargs.get("user_id")] * dataset.__len__(), header="user_id"
+        )
 
     def before_import_row(self, row, row_number=None, **kwargs):
         # Process technologies field: split by comma and get or create Technology objects
@@ -161,7 +163,7 @@ class SemicolonCSV(TextFormat):
 class ProjectAdmin(ImportExportModelAdmin):
     resource_class = ProjectResource
     list_display = ("title", "created_at", "updated_at", "user")
-    list_filter = ("title", "created_at", "updated_at", "user")
+    list_filter = ("created_at", "updated_at", "user")
     search_fields = ("title", "description")
     ordering = ("title",)
     filter_horizontal = ("industries", "technologies")

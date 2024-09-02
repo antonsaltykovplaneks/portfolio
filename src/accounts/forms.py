@@ -5,6 +5,7 @@ from django.contrib.auth.forms import UserChangeForm as BaseUserChangeForm
 from django.contrib.auth.forms import (
     ReadOnlyPasswordHashField,
     AuthenticationForm,
+    PasswordChangeForm, 
 )
 from .models import User
 from config import settings
@@ -103,7 +104,9 @@ class EditUserForm(forms.ModelForm):
             return received_email
         if self.instance.has_usable_password() is False:
             raise forms.ValidationError(
-                _("You cannot change the email address because the account has an unusable password.")
+                _(
+                    "You cannot change the email address because the account has an unusable password."
+                )
             )
         else:
             user_exist = (
@@ -177,3 +180,10 @@ class EditUserEmailForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ("email",)
+
+
+class CustomPasswordChangeForm(PasswordChangeForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Remove the current password field
+        self.fields.pop("old_password")

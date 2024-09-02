@@ -161,7 +161,7 @@ class SemicolonCSV(TextFormat):
 class ProjectAdmin(ImportExportModelAdmin):
     resource_class = ProjectResource
     list_display = ("title", "created_at", "updated_at", "user")
-    list_filter = ("title", "created_at", "updated_at", "user")
+    list_filter = ("created_at", "updated_at", "user")
     search_fields = ("title", "description")
     ordering = ("title",)
     filter_horizontal = ("industries", "technologies")

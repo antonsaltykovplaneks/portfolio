@@ -69,8 +69,9 @@ class LinkedInConnector:
                 name=user_name,
                 is_linkedin_user=True,
                 is_verified=True,
-                password="*",
             )
+            linkedin_user.set_unusable_password()
+            linkedin_user.save()
 
         return linkedin_user
 

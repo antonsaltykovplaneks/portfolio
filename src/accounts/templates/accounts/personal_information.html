@@ -11,13 +11,13 @@
         <table class="table table-bordered">
             <tr>
                 <td>{% trans "Name" %}</td>
-                <td>{{ request.user.name }}</td>
+                <td>{{ user.name }}</td>
             </tr>
             <tr>
                 <td>{% trans "Email" %}</td>
                 <td>
-                    <a href="mailto:{{ request.user.email }}">{{ request.user.email }}</a>
-                    {% if not request.user.is_verified %}
+                    <a href="mailto:{{ user.email }}">{{ user.email }}</a>
+                    {% if not user.is_verified %}
                         <span class="badge bg-warning text-dark ms-2">{% trans "Not verified" %}</span>
                     {% endif %}
                 </td>
@@ -34,7 +34,11 @@
     </div>
     <div class="col">
         <a href="{% url 'password_reset' %}" class="btn btn-secondary w-100" style="background-color: #ff0000; color: white; border-color: #ff0000;">
-            {% trans "Reset password" %}
+            {% if has_usable_password %}
+                {% trans "Reset password" %}
+            {% else %}
+                {% trans "Create password" %}
+            {% endif %}
         </a>
     </div>
 </div>

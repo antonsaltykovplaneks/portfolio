@@ -7,8 +7,14 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.tokens import default_token_generator
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
-
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_protect
+from django.contrib.auth.forms import PasswordResetForm
+from django.urls import reverse_lazy
 from django.utils.http import urlsafe_base64_decode
+from django.contrib.auth.views import PasswordResetView
+from django.utils.translation import gettext_lazy as _
+
 
 from accounts.connectors import LinkedInConnector
 from accounts.tasks import send_email_celery_task
@@ -25,6 +31,7 @@ def personal_information_view(request):
     context = {
         "user": user,
         "menu": "personal_information",
+        "has_usable_password": user.has_usable_password(),
     }
     return render(request, "accounts/personal_information.html", context)
 
@@ -153,3 +160,43 @@ def linkedin_login_callback(request):
             # messages.error(request, "LinkedIn login failed", "error") # after PR merge
             return render(request, "error_register_login_failed.html")
     return redirect(reverse("login_register"))
+
+
+class PasswordResetModifiedView(PasswordResetView):
+    email_template_name = "registration/password_reset_email.html"
+    extra_email_context = None
+    form_class = PasswordResetForm
+    from_email = None
+    html_email_template_name = None
+    subject_template_name = "registration/password_reset_subject.txt"
+    success_url = reverse_lazy("password_reset_done")
+    template_name = "registration/password_reset_form.html"
+    title = _("Password reset")
+    token_generator = default_token_generator
+
+    @method_decorator(csrf_protect)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+
+    def form_valid(self, form):
+        user = User.objects.filter(email=form["email"].data).first()
+        if user and user.has_usable_password() is False:
+            messages.add_message(
+                self.request,
+                messages.WARNING,
+                _("This account cannot reset the password."),
+            )
+            return redirect("login")
+
+        opts = {
+            "use_https": self.request.is_secure(),
+            "token_generator": self.token_generator,
+            "from_email": self.from_email,
+            "email_template_name": self.email_template_name,
+            "subject_template_name": self.subject_template_name,
+            "request": self.request,
+            "html_email_template_name": self.html_email_template_name,
+            "extra_email_context": self.extra_email_context,
+        }
+        form.save(**opts)
+        return super().form_valid(form)

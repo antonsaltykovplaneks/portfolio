@@ -25,6 +25,9 @@
                             <div class="form-group">
                                 <button class="btn btn-lg btn-primary btn-block" type="submit" name="login_submit">{% trans "Login" %}</button>
                             </div>
+                            <a href="{% url 'password_reset' %}" >
+                                {% trans "Reset password" %}
+                            </a>
                         </form>
                     </div>
                 </div>

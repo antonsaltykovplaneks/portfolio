@@ -101,6 +101,10 @@ class EditUserForm(forms.ModelForm):
         received_email = self.cleaned_data.get("email")
         if self.instance.email == received_email:
             return received_email
+        if self.instance.has_usable_password() is False:
+            raise forms.ValidationError(
+                _("You cannot change the email address because the account has an unusable password.")
+            )
         else:
             user_exist = (
                 User.objects.filter(email=received_email)

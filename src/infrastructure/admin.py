@@ -101,9 +101,12 @@ class ProjectResource(resources.ModelResource):
 
     def before_import(self, dataset, **kwargs):
         super().before_import(dataset, **kwargs)
+        # Append a column for user_id with the value provided in kwargs
+        # Avoids exception about different number of columns in header and row
         dataset.append_col([kwargs.get("user_id")], header="user_id")
 
     def before_import_row(self, row, row_number=None, **kwargs):
+        # Process technologies field: split by comma and get or create Technology objects
         technologies = row.get("technologies")
         if technologies:
             row["technologies"] = [
@@ -111,6 +114,7 @@ class ProjectResource(resources.ModelResource):
                 for tech in technologies.split(",")
             ]
 
+        # Process industries field: split by comma and get or create Industry objects
         industries = row.get("industries")
         if industries:
             row["industries"] = [
@@ -118,11 +122,13 @@ class ProjectResource(resources.ModelResource):
                 for ind in industries.split(",")
             ]
 
+        # Set user_id in the row if provided in kwargs
         user_id = kwargs.get("user_id")
         if user_id:
             row["user_id"] = user_id
 
     def after_init_instance(self, instance, new, row, **kwargs):
+        # Set user_id on the instance if provided in the row
         user_id = row.get("user_id")
         if user_id:
             instance.user_id = user_id
@@ -130,16 +136,19 @@ class ProjectResource(resources.ModelResource):
 
 
 class UserSelectForm(ImportForm):
+    # Custom form to select a user during import
     user = forms.ModelChoiceField(
         queryset=User.objects.all(), required=False, label="Select User"
     )
 
 
 class SemicolonCSV(TextFormat):
+    # Custom CSV format with semicolon delimiter
     TABLIB_MODULE = "tablib.formats._csv"
     CONTENT_TYPE = "text/csv"
 
     def create_dataset(self, in_stream, **kwargs):
+        # Create dataset from input stream with semicolon delimiter
         dataset = super().create_dataset(in_stream, **kwargs)
         dataset = tablib.Dataset().load(in_stream, format="csv", delimiter=";")
         return dataset
@@ -159,6 +168,7 @@ class ProjectAdmin(ImportExportModelAdmin):
     readonly_fields = ("created_at", "updated_at")
 
     def get_export_formats(self):
+        # Override export formats to use SemicolonCSV instead of default CSV
         formats = super().get_export_formats()
         for i, format_class in enumerate(formats):
             if format_class is CSV:
@@ -166,6 +176,7 @@ class ProjectAdmin(ImportExportModelAdmin):
         return formats
 
     def get_import_formats(self):
+        # Override import formats to use SemicolonCSV instead of default CSV
         formats = super().get_import_formats()
         for i, format_class in enumerate(formats):
             if format_class is CSV:
@@ -190,6 +201,7 @@ class ProjectAdmin(ImportExportModelAdmin):
                 dataset = self.get_import_formats()[0]().create_dataset(
                     data, delimiter=";"
                 )
+                # Process the dataset with the selected user_id
                 result = self.process_dataset(
                     dataset,
                     request=request,
@@ -210,6 +222,7 @@ class ProjectAdmin(ImportExportModelAdmin):
         return TemplateResponse(request, self.import_template_name, context)
 
     def get_import_context_data(self, **kwargs):
+        # Add model metadata to the context
         context = super().get_import_context_data(**kwargs)
         context["opts"] = self.model._meta
         return context

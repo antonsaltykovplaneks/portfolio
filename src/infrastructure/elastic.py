@@ -133,10 +133,14 @@ def search_projects(
         )
 
     if technology_filters:
-        search = search.filter("terms", technology=technology_filters)
+        # Apply "AND" logic by requiring all selected technologies to be present in each project
+        for tech in technology_filters:
+            search = search.filter("term", technologies__raw=tech)
 
     if industry_filters:
-        search = search.filter("terms", industry=industry_filters)
+        # Apply "AND" logic by requiring all selected industries to be present in each project
+        for ind in industry_filters:
+            search = search.filter("term", industries__raw=ind)
 
     # Apply pagination
     search = search[(page - 1) * size : page * size]
@@ -160,20 +164,17 @@ def search_projects(
         for bucket in response.aggregations.industries.buckets
     }
 
-    # Filter out zero-count technologies unless they were in the filters
-    if technology_filters:
-        technology_counts = {
-            tech: count
-            for tech, count in technology_counts.items()
-            if count > 0 or tech in technology_filters
-        }
-
-    # Filter out zero-count industries unless they were in the filters
-    if industry_filters:
+    # Filter out zero-count industries and technologies unless they were in the filters
+    if industry_filters or technology_filters:
         industry_counts = {
             ind: count
             for ind, count in industry_counts.items()
             if count > 0 or ind in industry_filters
+        }
+        technology_counts = {
+            tech: count
+            for tech, count in technology_counts.items()
+            if count > 0 or tech in technology_filters
         }
 
     return {

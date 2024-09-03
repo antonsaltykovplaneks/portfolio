@@ -69,6 +69,13 @@ services:
       - "8050:8000"
     env_file:
       - ./.env
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.0
+    environment:
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    ports:
+      - "9200:9200"
 # Uncomment if you need Caddy locally
 #  caddy:
 #    build:

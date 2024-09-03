@@ -11,11 +11,18 @@ class Project(models.Model):
     image = models.ImageField(upload_to="projects", null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    url = models.URLField(null=True, blank=True)
 
     user = models.ForeignKey("accounts.User", on_delete=models.CASCADE)
 
     industries = models.ManyToManyField("Industry", related_name="projects")
     technologies = models.ManyToManyField("Technology", related_name="projects")
+
+    def industries_indexing(self):
+        return [industry.title for industry in self.industries.all()]
+
+    def technologies_indexing(self):
+        return [technology.title for technology in self.technologies.all()]
 
     def __str__(self):
         return self.title

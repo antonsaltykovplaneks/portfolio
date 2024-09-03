@@ -39,15 +39,13 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    # 'polymorphic',
-    # 'channels',
     "django_extensions",
     "import_export",
-    # Add the apps here
     "core",
     "accounts",
     "infrastructure",
     "anymail",
+    "django_elasticsearch_dsl",
 ]
 
 if CONFIGURATION == "dev":
@@ -232,6 +230,10 @@ CACHES = {
         "KEY_PREFIX": KEY_PREFIX,
     },
 }
+
+ELASTICSEARCH_DSL = {"default": {"hosts": "http://elasticsearch:9200"}}
+DEFAULT_SIZE_PAGE = 10
+DEFAULT_FIRST_PAGE = 1
 
 LINKEDIN_CLIENT_ID = config("SOCIAL_AUTH_LINKEDIN_OAUTH2_KEY")
 LINKEDIN_CLIENT_SECRET = config("SOCIAL_AUTH_LINKEDIN_OAUTH2_SECRET")

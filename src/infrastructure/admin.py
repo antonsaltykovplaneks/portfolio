@@ -78,6 +78,7 @@ class ProjectResource(resources.ModelResource):
             "user_id",
             "title",
             "description",
+            "url",
             "industries",
             "technologies",
         )
@@ -86,6 +87,7 @@ class ProjectResource(resources.ModelResource):
             "id",
             "title",
             "description",
+            "url",
             "created_at",
             "updated_at",
             "user__name",
@@ -112,7 +114,7 @@ class ProjectResource(resources.ModelResource):
         technologies = row.get("technologies")
         if technologies:
             row["technologies"] = [
-                Technology.objects.get_or_create(title=tech)[0].id
+                Technology.objects.get_or_create(title=tech.lower())[0].id
                 for tech in technologies.split(",")
             ]
 
@@ -120,7 +122,7 @@ class ProjectResource(resources.ModelResource):
         industries = row.get("industries")
         if industries:
             row["industries"] = [
-                Industry.objects.get_or_create(title=ind)[0].id
+                Industry.objects.get_or_create(title=ind.lower())[0].id
                 for ind in industries.split(",")
             ]
 

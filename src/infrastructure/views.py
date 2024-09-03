@@ -9,8 +9,8 @@ def project_search_view(request):
     search_string = request.GET.get("q")
     technologies = request.GET.getlist("technology")
     industries = request.GET.getlist("industry")
-    page = int(request.GET.get("page", settings.DEFAULT_SIZE_PAGE))
-    size = int(request.GET.get("size", settings.DEFAULT_FIRST_PAGE))
+    page = int(request.GET.get("page", settings.DEFAULT_FIRST_PAGE))
+    size = int(request.GET.get("size", settings.DEFAULT_SIZE_PAGE))
     sort_by = request.GET.get("sort_by")
 
     results = search_projects(

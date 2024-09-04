@@ -103,7 +103,7 @@ class ProjectResource(resources.ModelResource):
 
     def before_import(self, dataset, **kwargs):
         super().before_import(dataset, **kwargs)
-        # Append a column for user_id with the value provided in kwargs
+        # Append a column for user_id with the value proviai[ded in kwargs
         # Avoids Dimension Error
         dataset.append_col(
             [kwargs.get("user_id")] * dataset.__len__(), header="user_id"
@@ -117,7 +117,7 @@ class ProjectResource(resources.ModelResource):
             for tech in technologies.split(","):
                 tech_obj = Technology.objects.filter(title__iexact=tech.lower()).first()
                 if not tech_obj:
-                    tech_obj = Technology.objects.create(title__iexact=tech)
+                    tech_obj = Technology.objects.create(title=tech)
                 tech_ids.append(tech_obj.id)
             row["technologies"] = tech_ids
 

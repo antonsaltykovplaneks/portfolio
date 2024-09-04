@@ -112,19 +112,25 @@ class ProjectResource(resources.ModelResource):
     def before_import_row(self, row, row_number=None, **kwargs):
         # Process technologies field: split by comma and get or create Technology objects
         technologies = row.get("technologies")
+        tech_ids = list()
         if technologies:
-            row["technologies"] = [
-                Technology.objects.get_or_create(title=tech.lower())[0].id
-                for tech in technologies.split(",")
-            ]
+            for tech in technologies.split(","):
+                tech_obj = Technology.objects.filter(title__iexact=tech.lower()).first()
+                if not tech_obj:
+                    tech_obj = Technology.objects.create(title__iexact=tech)
+                tech_ids.append(tech_obj.id)
+            row["technologies"] = tech_ids
 
         # Process industries field: split by comma and get or create Industry objects
         industries = row.get("industries")
+        industry_ids = list()
         if industries:
-            row["industries"] = [
-                Industry.objects.get_or_create(title=ind.lower())[0].id
-                for ind in industries.split(",")
-            ]
+            for industry in industries.split(","):
+                industry_obj = Industry.objects.filter(title=industry.lower()).first()
+                if not industry_obj:
+                    industry_obj = Industry.objects.create(title=industry)
+                industry_ids.append(industry_obj.id)
+            row["industries"] = industry_ids
 
         # Set user_id in the row if provided in kwargs
         user_id = kwargs.get("user_id")

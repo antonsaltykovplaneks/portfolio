@@ -10,12 +10,17 @@
             <h5>Industry</h5>
             <input type="text" id="industry-search" class="form-control mb-3" placeholder="Search industry">
             <form id="industry-filters">
-                {% for industry, count in results.facets.industries.items %}
+                {% for industry, data in results.facets.industries.items %}
                     <div class="form-check">
                         <input class="form-check-input industry-filter" type="checkbox" value="{{ industry }}" id="{{ industry|slugify }}"
                             {% if industry in selected_industries %}checked{% endif %}>
                         <label class="form-check-label" for="{{ industry|slugify }}">
-                            {{ industry }} ({{ count }})
+                            {{ industry }}
+                            {% if data.new_projects > 0 and not industry in selected_industries %}
+                                <span class="text-muted">(+{{ data.new_projects }} new)</span>
+                            {% else %}
+                                ({{ data.count }})
+                            {% endif %}
                         </label>
                     </div>
                 {% endfor %}

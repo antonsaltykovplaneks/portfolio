@@ -4,6 +4,7 @@ from elasticsearch_dsl import Q, analyzer
 from typing import List
 
 from config import settings
+from collections import OrderedDict
 
 from .models import Industry, Project, Technology
 
@@ -112,13 +113,13 @@ def search_projects(
     Search for projects in Elasticsearch.
 
     Args:
-        user (_type_):The user performing the search.
+        user (_type_): The user performing the search.
         search_string (str, optional): The search query string. Defaults to None.
         technology_filters (List[str], optional): List of technology filters. Defaults to None.
         industry_filters (List[str], optional): List of industry filters. Defaults to None.
-        page (int, optional):  The page number for pagination.. Defaults to settings.DEFAULT_FIRST_PAGE.
-        size (int, optional): The number of results per page.. Defaults to settings.DEFAULT_SIZE_PAGE.
-        sort_by (str, optional): The field to sort by.. Defaults to None.
+        page (int, optional): The page number for pagination. Defaults to settings.DEFAULT_FIRST_PAGE.
+        size (int, optional): The number of results per page. Defaults to settings.DEFAULT_SIZE_PAGE.
+        sort_by (str, optional): The field to sort by. Defaults to None.
 
     Returns:
         dict: A dictionary containing search results and facet counts.
@@ -126,6 +127,11 @@ def search_projects(
     search = ProjectDocument.search()
 
     search = search.filter("term", user__id=user.id)
+    search.aggs.bucket("technologies", "terms", field="technologies.raw")
+    industries_agg = search.aggs.bucket("industries", "terms", field="industries.raw")
+
+    # Add a sub-aggregation to calculate potential projects if each industry filter is applied
+    industries_agg.bucket("potential_projects", "cardinality", field="industries.raw")
 
     if search_string:
         search = search.query(
@@ -138,9 +144,7 @@ def search_projects(
             search = search.filter("term", technologies__raw=tech)
 
     if industry_filters:
-        # Apply "AND" logic by requiring all selected industries to be present in each project
-        for ind in industry_filters:
-            search = search.filter("term", industries__raw=ind)
+        search = search.filter("terms", industries__raw=industry_filters)
 
     # Apply pagination
     search = search[(page - 1) * size : page * size]
@@ -149,33 +153,35 @@ def search_projects(
         search = search.sort({sort_by: {"order": "asc"}})
 
     # Aggregate technology and industry counts
-    search.aggs.bucket("technologies", "terms", field="technologies.raw")
-    search.aggs.bucket("industries", "terms", field="industries.raw")
 
     response = search.execute()
 
-    # Extract technology and industry counts from the response
-    technology_counts = {
-        bucket.key: bucket.doc_count
+    technology_counts = OrderedDict(
+        (bucket.key, bucket.doc_count)
         for bucket in response.aggregations.technologies.buckets
-    }
-    industry_counts = {
-        bucket.key: bucket.doc_count
-        for bucket in response.aggregations.industries.buckets
-    }
+    )
+    # Create industry counts with additional info on potential projects if filter is applied
+    industry_counts = OrderedDict()
+    for bucket in response.aggregations.industries.buckets:
+        potential_count = bucket.potential_projects.value
+        industry_counts[bucket.key] = {
+            "count": bucket.doc_count,
+            "potential_count": potential_count,
+            "new_projects": potential_count - bucket.doc_count,
+        }
 
     # Filter out zero-count industries and technologies unless they were in the filters
     if industry_filters or technology_filters:
-        industry_counts = {
-            ind: count
-            for ind, count in industry_counts.items()
-            if count > 0 or ind in industry_filters
-        }
-        technology_counts = {
-            tech: count
+        industry_counts = OrderedDict(
+            (ind, info)
+            for ind, info in industry_counts.items()
+            if info["count"] > 0 or ind in industry_filters
+        )
+        technology_counts = OrderedDict(
+            (tech, count)
             for tech, count in technology_counts.items()
             if count > 0 or tech in technology_filters
-        }
+        )
 
     return {
         "data": response,

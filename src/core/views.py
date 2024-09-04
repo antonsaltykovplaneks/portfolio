@@ -3,6 +3,7 @@ from django.shortcuts import render
 from infrastructure.elastic import search_projects
 from config import settings
 
+
 def index(request):
     user = request.user
     search_string = request.GET.get("q")

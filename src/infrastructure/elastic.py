@@ -129,9 +129,14 @@ def search_projects(
     search = search.filter("term", user__id=user.id)
     search.aggs.bucket("technologies", "terms", field="technologies.raw")
     industries_agg = search.aggs.bucket("industries", "terms", field="industries.raw")
-
+    industries_agg.bucket(
+        "potential_projects",
+        "filter",
+        filter=(
+            ~Q("terms", industries__raw=industry_filters) if industry_filters else Q()
+        ),
+    )
     # Add a sub-aggregation to calculate potential projects if each industry filter is applied
-    industries_agg.bucket("potential_projects", "cardinality", field="industries.raw")
 
     if search_string:
         search = search.query(
@@ -145,7 +150,11 @@ def search_projects(
 
     if industry_filters:
         search = search.filter("terms", industries__raw=industry_filters)
-
+        industries_agg.bucket(
+            "potential_projects",
+            "filter",
+            filter=~Q("terms", industries__raw=industry_filters),
+        )
     # Apply pagination
     search = search[(page - 1) * size : page * size]
 
@@ -153,7 +162,6 @@ def search_projects(
         search = search.sort({sort_by: {"order": "asc"}})
 
     # Aggregate technology and industry counts
-
     response = search.execute()
 
     technology_counts = OrderedDict(
@@ -163,25 +171,46 @@ def search_projects(
     # Create industry counts with additional info on potential projects if filter is applied
     industry_counts = OrderedDict()
     for bucket in response.aggregations.industries.buckets:
-        potential_count = bucket.potential_projects.value
+        potential_count = bucket.potential_projects.doc_count + bucket.doc_count
         industry_counts[bucket.key] = {
             "count": bucket.doc_count,
             "potential_count": potential_count,
             "new_projects": potential_count - bucket.doc_count,
         }
 
-    # Filter out zero-count industries and technologies unless they were in the filters
-    if industry_filters or technology_filters:
-        industry_counts = OrderedDict(
-            (ind, info)
-            for ind, info in industry_counts.items()
-            if info["count"] > 0 or ind in industry_filters
-        )
+    # Fetch all unique industries for the user to ensure they are always shown
+    all_industries_search = ProjectDocument.search()
+    all_industries_search = all_industries_search.filter("term", user__id=user.id)
+    all_industries_search.aggs.bucket(
+        "all_industries", "terms", field="industries.raw", size=10000
+    )
+    all_industries_response = all_industries_search.execute()
+
+    all_industries = {
+        bucket.key: bucket.doc_count
+        for bucket in all_industries_response.aggregations.all_industries.buckets
+    }
+
+    # Ensure all industries are included in the final result
+    for industry in all_industries.keys():
+        if industry not in industry_counts:
+            industry_counts[industry] = {
+                "count": all_industries[industry],
+                "potential_count": all_industries[industry],
+                "new_projects": all_industries[industry],
+            }
+
+    # Filter out zero-count technologies unless they were in the filters
+    if technology_filters:
         technology_counts = OrderedDict(
             (tech, count)
             for tech, count in technology_counts.items()
             if count > 0 or tech in technology_filters
         )
+
+    # Sort the dictionaries by keys (alphabetical order)
+    technology_counts = OrderedDict(sorted(technology_counts.items()))
+    industry_counts = OrderedDict(sorted(industry_counts.items()))
 
     return {
         "data": response,

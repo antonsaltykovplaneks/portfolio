@@ -7,6 +7,7 @@
 <div class="container">
     <div class="row">
         <div class="col-md-3">
+            <!-- Industry Filters -->
             <h5>Industry</h5>
             <input type="text" id="industry-search" class="form-control mb-3" placeholder="Search industry">
             <form id="industry-filters">
@@ -17,7 +18,7 @@
                         <label class="form-check-label" for="{{ industry|slugify }}">
                             {{ industry }}
                             {% if data.new_projects > 0 and not industry in selected_industries %}
-                                <span class="text-muted">(+{{ data.new_projects }} new)</span>
+                                <span class="text-muted"> (+{{ data.new_projects }})</span>
                             {% else %}
                                 ({{ data.count }})
                             {% endif %}
@@ -25,6 +26,8 @@
                     </div>
                 {% endfor %}
             </form>
+
+            <!-- Technology Filters -->
             <h5 class="mt-4">Technology</h5>
             <input type="text" id="technology-search" class="form-control mb-3" placeholder="Search technology">
             <form id="technology-filters">
@@ -41,6 +44,7 @@
         </div>
 
         <div class="col-md-9">
+            <!-- Buttons and Search -->
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <div>
                     <button class="btn btn-primary">Private</button>
@@ -54,16 +58,18 @@
                 </div>
             </div>
 
+            <!-- Search Bar -->
             <div class="search-bar mb-3">
                 <input type="text" id="project-search" class="form-control" placeholder="Search">
             </div>
 
+            <!-- Project List -->
             <div id="project-list">
                 {% for project in results.data %}
                     <div class="project-item mb-3 p-3 border rounded">
                         <h5 class="mb-1">{{ project.title }}</h5>
                         <p><strong>Industries:</strong> {{ project.industries|join:', ' }}</p>
-                        <p><strong>Description:</strong>{{ project.description }}</p>
+                        <p><strong>Description:</strong> {{ project.description }}</p>
                         <p><strong>Technologies:</strong> {{ project.technologies|join:', ' }}</p>
                         {% if project.url %}
                             <p><strong>URL:</strong> <a href="{{ project.url }}" target="_blank">{{ project.url }}</a></p>
@@ -75,6 +81,31 @@
                     </div>
                 {% endfor %}
             </div>
+
+            <!-- Pagination -->
+            <nav aria-label="Project pagination">
+                <ul class="pagination justify-content-center">
+                    {% if page > 1 %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page|add:-1 }}&{{ query_params }}" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                    {% for num in page_range %}
+                        <li class="page-item {% if page == num %}active{% endif %}">
+                            <a class="page-link" href="?page={{ num }}&{{ query_params }}">{{ num }}</a>
+                        </li>
+                    {% endfor %}
+                    {% if has_next_page %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page|add:1 }}&{{ query_params }}" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
         </div>
     </div>
 </div>

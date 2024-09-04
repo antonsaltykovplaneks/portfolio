@@ -35,8 +35,13 @@ document.addEventListener('DOMContentLoaded', function () {
         fetchProjects();
     };
 
-    const fetchProjects = () => {
-        fetch(window.location.href, {
+    const fetchProjects = (page = null) => {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (page) {
+            urlParams.set('page', page);
+        }
+
+        fetch(`${window.location.pathname}?${urlParams.toString()}`, {
             headers: {
                 'X-Requested-With': 'XMLHttpRequest'
             }
@@ -58,7 +63,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 const newTechnologyFilters = doc.getElementById('technology-filters').innerHTML;
                 document.getElementById('technology-filters').innerHTML = newTechnologyFilters;
 
-                // Rebind the event listeners after updating the filters
+                // Update the pagination links
+                const newPagination = doc.querySelector('.pagination').outerHTML;
+                document.querySelector('.pagination').outerHTML = newPagination;
+
+                // Rebind the event listeners after updating the filters and pagination
                 bindEventListeners();
             })
             .catch(error => {
@@ -74,6 +83,14 @@ document.addEventListener('DOMContentLoaded', function () {
         document.querySelectorAll('.technology-filter').forEach(el => {
             el.addEventListener('change', updateURLParams);
         });
+
+        document.querySelectorAll('.page-link').forEach(link => {
+            link.addEventListener('click', function (event) {
+                event.preventDefault();
+                const page = new URL(link.href).searchParams.get('page');
+                fetchProjects(page);
+            });
+        });
     };
 
     const debouncedFetch = debounce(updateURLParams, 300);
@@ -81,9 +98,6 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('project-search').addEventListener('input', debouncedFetch);
 
     bindEventListeners();
-
-    // document.getElementById('industry-search').addEventListener('input', debouncedFetch);
-    // document.getElementById('technology-search').addEventListener('input', debouncedFetch);
 
     const industrySearch = document.getElementById('industry-search');
     const technologySearch = document.getElementById('technology-search');

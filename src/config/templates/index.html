@@ -1,29 +1,40 @@
 {% extends "base.html" %}
+{% load static %}
 
-{% block title %}porfolio{% endblock %}
+{% block title %}Portfolio{% endblock %}
 
 {% block content %}
 <div class="container">
     <div class="row">
         <div class="col-md-3">
+            <!-- Industry Filters -->
             <h5>Industry</h5>
-            <form>
-                <input type="text" class="form-control mb-3" placeholder="Search industry">
-                {% for industry, count in results.facets.industries.items %}
+            <input type="text" id="industry-search" class="form-control mb-3" placeholder="Search industry">
+            <form id="industry-filters">
+                {% for industry, data in results.facets.industries.items %}
                     <div class="form-check">
-                        <input class="form-check-input" type="checkbox" value="" id="{{ industry|slugify }}">
+                        <input class="form-check-input industry-filter" type="checkbox" value="{{ industry }}" id="{{ industry|slugify }}"
+                            {% if industry in selected_industries %}checked{% endif %}>
                         <label class="form-check-label" for="{{ industry|slugify }}">
-                            {{ industry }} ({{ count }})
+                            {{ industry }}
+                            {% if data.new_projects > 0 and not industry in selected_industries %}
+                                <span class="text-muted"> (+{{ data.new_projects }})</span>
+                            {% else %}
+                                ({{ data.count }})
+                            {% endif %}
                         </label>
                     </div>
                 {% endfor %}
             </form>
+
+            <!-- Technology Filters -->
             <h5 class="mt-4">Technology</h5>
-            <form>
-                <input type="text" class="form-control mb-3" placeholder="Search technology">
+            <input type="text" id="technology-search" class="form-control mb-3" placeholder="Search technology">
+            <form id="technology-filters">
                 {% for technology, count in results.facets.technologies.items %}
                     <div class="form-check">
-                        <input class="form-check-input" type="checkbox" value="" id="{{ technology|slugify }}">
+                        <input class="form-check-input technology-filter" type="checkbox" value="{{ technology }}" id="{{ technology|slugify }}"
+                            {% if technology in selected_technologies %}checked{% endif %}>
                         <label class="form-check-label" for="{{ technology|slugify }}">
                             {{ technology }} ({{ count }})
                         </label>
@@ -33,6 +44,7 @@
         </div>
 
         <div class="col-md-9">
+            <!-- Buttons and Search -->
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <div>
                     <button class="btn btn-primary">Private</button>
@@ -46,27 +58,21 @@
                 </div>
             </div>
 
+            <!-- Search Bar -->
             <div class="search-bar mb-3">
-                <input type="text" class="form-control" placeholder="Search">
+                <input type="text" id="project-search" class="form-control" placeholder="Search">
             </div>
 
-            <div class="project-list">
+            <!-- Project List -->
+            <div id="project-list">
                 {% for project in results.data %}
                     <div class="project-item mb-3 p-3 border rounded">
-                        <h5 class="mb-1">{{project.title}}</h5>
-                        <p>
-                            <strong>Industries:</strong> {{ project.industries|join:', ' }}
-                        </p>
-                        <p>
-                            <strong>Description:</strong>{{project.description}}
-                        </p>
-                        <p>
-                            <strong>Technologies:</strong> {{ project.technologies|join:', ' }}
-                        </p>
+                        <h5 class="mb-1">{{ project.title }}</h5>
+                        <p><strong>Industries:</strong> {{ project.industries|join:', ' }}</p>
+                        <p><strong>Description:</strong> {{ project.description }}</p>
+                        <p><strong>Technologies:</strong> {{ project.technologies|join:', ' }}</p>
                         {% if project.url %}
-                            <p>
-                                <strong>URL:</strong> <a href="{{ project.url }}" target="_blank">{{ project.url }}</a>
-                            </p>
+                            <p><strong>URL:</strong> <a href="{{ project.url }}" target="_blank">{{ project.url }}</a></p>
                         {% endif %}
                         <div class="d-flex justify-content-end">
                             <a href="#" class="btn btn-link">Edit</a>
@@ -75,7 +81,33 @@
                     </div>
                 {% endfor %}
             </div>
+
+            <!-- Pagination -->
+            <nav aria-label="Project pagination">
+                <ul class="pagination justify-content-center">
+                    {% if page > 1 %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page|add:-1 }}&{{ query_params }}" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                    {% for num in page_range %}
+                        <li class="page-item {% if page == num %}active{% endif %}">
+                            <a class="page-link" href="?page={{ num }}&{{ query_params }}">{{ num }}</a>
+                        </li>
+                    {% endfor %}
+                    {% if has_next_page %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page|add:1 }}&{{ query_params }}" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
         </div>
     </div>
 </div>
+<script src="{% static 'ajax_project_filters.js' %}" defer></script>
 {% endblock %}

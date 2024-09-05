@@ -164,7 +164,12 @@ def search_projects(
 
     if search_string:
         search = search.query(
-            Q("multi_match", query=search_string, fields=["title", "description"])
+            Q(
+                "multi_match",
+                query=search_string,
+                fields=["title", "description"],
+                fuzziness="AUTO",  # Fuzziness for typo correction
+            )
         )
 
     if technology_filters:

@@ -1,10 +1,16 @@
-from django.shortcuts import render
-
-from infrastructure.elastic import search_projects
-from config import settings
-
-
 from urllib.parse import urlencode
+
+import tablib
+from django.contrib import messages
+from django.shortcuts import redirect, render
+from django.urls import reverse
+from elasticsearch.helpers import bulk
+
+from config import settings
+from core.forms import CSVUploadForm
+from infrastructure.admin import ProjectResource
+from infrastructure.elastic import ProjectDocument, search_projects
+from infrastructure.models import Project
 
 
 def index(request):
@@ -60,3 +66,47 @@ def index(request):
     }
 
     return render(request, "index.html", context)
+
+
+def upload_csv(request):
+    if request.method == "POST":
+        form = CSVUploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            csv_file = request.FILES["csv_file"]
+            data = csv_file.read().decode("utf-8")
+            dataset = tablib.Dataset().load(data, format="csv", delimiter=";")
+
+            project_resource = ProjectResource()
+            result = project_resource.import_data(
+                dataset, dry_run=True, user_id=request.user.id
+            )
+            print(f"Dry run result: {result.totals}")
+
+            if not result.has_errors():
+                result = project_resource.import_data(
+                    dataset, dry_run=False, user_id=request.user.id
+                )
+                print(f"Result: {result.totals}")
+                created_or_updated_ids = set()
+                for row_result in result.rows:
+                    if row_result.import_type in ("new", "update"):
+                        created_or_updated_ids.add(row_result.object_id)
+
+                # Bulk indexing of only newly created or updated projects
+                projects_to_index = Project.objects.filter(
+                    id__in=created_or_updated_ids
+                )
+                actions = (
+                    ProjectDocument.get_indexing_action(project)
+                    for project in projects_to_index
+                )
+                index_result = bulk(ProjectDocument._get_connection(), actions)
+                print(f"Indexing Result: {index_result}")
+                messages.success(request, "CSV file imported and indexed successfully!")
+                return redirect(reverse("index"))
+            else:
+                messages.error(request, "CSV file import failed due to errors.")
+    else:
+        form = CSVUploadForm()
+
+    return render(request, "upload_csv.html", {"form": form})

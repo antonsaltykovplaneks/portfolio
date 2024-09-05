@@ -63,6 +63,7 @@ class ProjectDocument(Document):
         Django model settings for the Elasticsearch document.
         """
 
+        ignore_signals = True
         model = Project
         fields = [
             "title",
@@ -99,6 +100,29 @@ class ProjectDocument(Document):
         elif isinstance(related_instance, Technology):
             return related_instance.projects.all()
 
+    @staticmethod
+    def get_indexing_action(project):
+        """
+        Return the data necessary for bulk indexing of the given project.
+        """
+        return {
+            "_op_type": "index",
+            "_index": ProjectDocument.Index.name,
+            "_id": project.id,
+            "_source": {
+                "title": project.title,
+                "description": project.description,
+                "created_at": project.created_at,
+                "updated_at": project.updated_at,
+                "url": project.url,
+                "industries": list(project.industries.values_list("title", flat=True)),
+                "technologies": list(
+                    project.technologies.values_list("title", flat=True)
+                ),
+                "user": {"id": project.user.id},
+            },
+        }
+
 
 def search_projects(
     user,
@@ -129,6 +153,7 @@ def search_projects(
     search = search.filter("term", user__id=user.id)
     search.aggs.bucket("technologies", "terms", field="technologies.raw")
     industries_agg = search.aggs.bucket("industries", "terms", field="industries.raw")
+    # Add a sub-aggregation to calculate potential projects if each industry filter is applied
     industries_agg.bucket(
         "potential_projects",
         "filter",
@@ -136,7 +161,6 @@ def search_projects(
             ~Q("terms", industries__raw=industry_filters) if industry_filters else Q()
         ),
     )
-    # Add a sub-aggregation to calculate potential projects if each industry filter is applied
 
     if search_string:
         search = search.query(

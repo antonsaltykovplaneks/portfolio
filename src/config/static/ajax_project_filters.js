@@ -91,6 +91,37 @@ document.addEventListener('DOMContentLoaded', function () {
                 fetchProjects(page);
             });
         });
+
+        // Industry and Technology Link Click Handlers
+        document.querySelectorAll('.industry-link').forEach(link => {
+            link.addEventListener('click', function (event) {
+                event.preventDefault();
+                const industry = this.getAttribute('data-industry');
+                const industryCheckbox = document.querySelector(`.industry-filter[value="${industry}"]`);
+                if (industryCheckbox.checked) {
+                    industryCheckbox.checked = false;
+                }
+                else {
+                    industryCheckbox.checked = true;
+                }
+                updateURLParams();
+            });
+        });
+
+        document.querySelectorAll('.technology-link').forEach(link => {
+            link.addEventListener('click', function (event) {
+                event.preventDefault();
+                const technology = this.getAttribute('data-technology');
+                const technologyCheckbox = document.querySelector(`.technology-filter[value="${technology}"]`);
+                if (technologyCheckbox.checked) {
+                    technologyCheckbox.checked = false;
+                }
+                else {
+                    technologyCheckbox.checked = true;
+                }
+                updateURLParams();
+            });
+        });
     };
 
     const debouncedFetch = debounce(updateURLParams, 300);

@@ -70,9 +70,19 @@
                 {% for project in results.data %}
                     <div class="project-item mb-3 p-3 border rounded">
                         <h5 class="mb-1">{{ project.title }}</h5>
-                        <p><strong>Industries:</strong> {{ project.industries|join:', ' }}</p>
+                        <p><strong>Industries:</strong> 
+                            {% for industry in project.industries %}
+                                <a href="#" class="industry-link" data-industry="{{ industry }}">{{ industry }}</a>
+                                {% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                        </p>
                         <p><strong>Description:</strong> {{ project.description }}</p>
-                        <p><strong>Technologies:</strong> {{ project.technologies|join:', ' }}</p>
+                        <p><strong>Technologies:</strong> 
+                            {% for technology in project.technologies %}
+                                <a href="#" class="technology-link" data-technology="{{ technology }}">{{ technology }}</a>
+                                {% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                        </p>
                         {% if project.url %}
                             <p><strong>URL:</strong> <a href="{{ project.url }}" target="_blank">{{ project.url }}</a></p>
                         {% endif %}

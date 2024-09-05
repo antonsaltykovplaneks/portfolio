@@ -63,6 +63,7 @@ class ProjectDocument(Document):
         Django model settings for the Elasticsearch document.
         """
 
+        ignore_signals = True
         model = Project
         fields = [
             "title",
@@ -98,6 +99,29 @@ class ProjectDocument(Document):
             return related_instance.projects.all()
         elif isinstance(related_instance, Technology):
             return related_instance.projects.all()
+
+    @staticmethod
+    def get_indexing_action(project):
+        """
+        Return the data necessary for bulk indexing of the given project.
+        """
+        return {
+            "_op_type": "index",
+            "_index": ProjectDocument.Index.name,
+            "_id": project.id,
+            "_source": {
+                "title": project.title,
+                "description": project.description,
+                "created_at": project.created_at,
+                "updated_at": project.updated_at,
+                "url": project.url,
+                "industries": list(project.industries.values_list("title", flat=True)),
+                "technologies": list(
+                    project.technologies.values_list("title", flat=True)
+                ),
+                "user": {"id": project.user.id},
+            },
+        }
 
 
 def search_projects(

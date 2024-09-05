@@ -2,12 +2,14 @@ import tablib
 from django import forms
 from django.contrib import admin, messages
 from django.template.response import TemplateResponse
+from elasticsearch.helpers import bulk
 from import_export import fields, resources, widgets
 from import_export.admin import ImportExportModelAdmin
 from import_export.formats.base_formats import CSV, TextFormat
 from import_export.forms import ImportForm
 
 from accounts.models import User
+from infrastructure.elastic import ProjectDocument
 
 from .models import Company, Industry, Project, Technology
 
@@ -142,7 +144,6 @@ class ProjectResource(resources.ModelResource):
         user_id = row.get("user_id")
         if user_id:
             instance.user_id = user_id
-            instance.save()
 
 
 class UserSelectForm(ImportForm):
@@ -222,6 +223,21 @@ class ProjectAdmin(ImportExportModelAdmin):
                 )
                 print(f"Result: {result.totals}")
                 if not result.has_errors() and not result.has_validation_errors():
+                    created_or_updated_ids = set()
+                    for row_result in result.rows:
+                        if row_result.import_type in ("new", "update"):
+                            created_or_updated_ids.add(row_result.object_id)
+
+                    # Bulk indexing of only newly created or updated projects
+                    projects_to_index = Project.objects.filter(
+                        id__in=created_or_updated_ids
+                    )
+                    actions = (
+                        ProjectDocument.get_indexing_action(project)
+                        for project in projects_to_index
+                    )
+                    index_result = bulk(ProjectDocument._get_connection(), actions)
+                    print(f"Indexing Result: {index_result}")
                     messages.success(request, "Import successful!")
                     return self.process_result(result, request)
                 else:

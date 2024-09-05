@@ -1,10 +1,14 @@
-from django.shortcuts import render
-
-from infrastructure.elastic import search_projects
-from config import settings
-
-
 from urllib.parse import urlencode
+
+import tablib
+from django.contrib import messages
+from django.shortcuts import redirect, render
+from django.urls import reverse
+
+from config import settings
+from infrastructure.admin import ProjectResource
+from infrastructure.elastic import search_projects
+from core.forms import CSVUploadForm
 
 
 def index(request):
@@ -60,3 +64,28 @@ def index(request):
     }
 
     return render(request, "index.html", context)
+
+
+def upload_csv(request):
+    if request.method == "POST":
+        form = CSVUploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            csv_file = request.FILES["csv_file"]
+            data = csv_file.read().decode("utf-8")
+            dataset = tablib.Dataset().load(data, format="csv", delimiter=";")
+
+            project_resource = ProjectResource()
+            result = project_resource.import_data(
+                dataset, dry_run=False, user_id=request.user.id
+            )
+            print(f"Result: {result.totals}")
+
+            if not result.has_errors():
+                messages.success(request, "CSV file imported successfully!")
+                return redirect(reverse("index"))
+            else:
+                messages.error(request, "CSV file import failed due to errors.")
+    else:
+        form = CSVUploadForm()
+
+    return render(request, "upload_csv.html", {"form": form})

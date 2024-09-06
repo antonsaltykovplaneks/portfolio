@@ -49,14 +49,16 @@
                 <div>
                     <button class="btn btn-primary">Private</button>
                     <button class="btn btn-secondary">Public</button>
-                    <button class="btn btn-secondary">My sets</button>
+                    <button class="btn btn-secondary" onclick="window.location.href='{% url 'project_set' %}'">
+                        My sets
+                    </button>
                 </div>
                 <div class="d-flex gap-2">
                     <button class="btn btn-success">Add new project</button>
                     <form action="{% url 'upload_csv' %}" method="get" class="m-0 p-0">
                         <button type="submit" class="btn btn-success">Upload .csv</button>
                     </form>
-                    <button class="btn btn-success">Add new set</button>
+                    <button class="btn btn-success add-new-set">Add new set</button>
                 </div>
             </div>
 
@@ -68,7 +70,7 @@
             <!-- Project List -->
             <div id="project-list">
                 {% for project in results.data %}
-                    <div class="project-item mb-3 p-3 border rounded">
+                    <div class="project-item mb-3 p-3 border rounded" data-project-id="{{ project.id }}">
                         <h5 class="mb-1">{{ project.title }}</h5>
                         <p><strong>Industries:</strong> 
                             {% for industry in project.industries %}
@@ -99,19 +101,19 @@
                 <ul class="pagination justify-content-center">
                     {% if page > 1 %}
                         <li class="page-item">
-                            <a class="page-link" href="?page={{ page|add:-1 }}&{{ query_params }}" aria-label="Previous">
+                            <a class="page-link" href="?page={{ page|add:-1 }}&{{ query_params }}&selected_projects={{ selected_projects|join:',' }}" aria-label="Previous">
                                 <span aria-hidden="true">&laquo;</span>
                             </a>
                         </li>
                     {% endif %}
                     {% for num in page_range %}
                         <li class="page-item {% if page == num %}active{% endif %}">
-                            <a class="page-link" href="?page={{ num }}&{{ query_params }}">{{ num }}</a>
+                            <a class="page-link" href="?page={{ num }}&{{ query_params }}&selected_projects={{ selected_projects|join:',' }}">{{ num }}</a>
                         </li>
                     {% endfor %}
                     {% if has_next_page %}
                         <li class="page-item">
-                            <a class="page-link" href="?page={{ page|add:1 }}&{{ query_params }}" aria-label="Next">
+                            <a class="page-link" href="?page={{ page|add:1 }}&{{ query_params }}&selected_projects={{ selected_projects|join:',' }}" aria-label="Next">
                                 <span aria-hidden="true">&raquo;</span>
                             </a>
                         </li>
@@ -121,5 +123,9 @@
         </div>
     </div>
 </div>
-<script src="{% static 'ajax_project_filters.js' %}" defer></script>
+{% csrf_token %}
+<script>
+    const csrfToken = '{{ csrf_token }}';
+</script>
+<script src="{% static 'ajax_index.js' %}" defer></script>
 {% endblock %}

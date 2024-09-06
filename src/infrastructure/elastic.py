@@ -66,6 +66,7 @@ class ProjectDocument(Document):
         ignore_signals = True
         model = Project
         fields = [
+            "id",
             "title",
             "description",
             "created_at",

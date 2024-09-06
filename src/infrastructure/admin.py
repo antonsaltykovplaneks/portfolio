@@ -11,7 +11,7 @@ from import_export.forms import ImportForm
 from accounts.models import User
 from infrastructure.elastic import ProjectDocument
 
-from .models import Company, Industry, Project, Technology
+from .models import Company, Industry, Project, Technology, ProjectSet
 
 
 @admin.register(Company)
@@ -45,6 +45,20 @@ class TechnologyAdmin(admin.ModelAdmin):
     list_display = ("title",)
     list_filter = ("title",)
     ordering = ("title",)
+
+
+@admin.register(ProjectSet)
+class ProjectSetAdmin(admin.ModelAdmin):
+    list_display = (
+        "title",
+        "is_public",
+        "created_at",
+        "updated_at",
+        "user",
+    )
+    list_filter = ("is_public", "created_at")
+    search_fields = ("title",)
+    filter_horizontal = ("projects",)
 
 
 class ManyToManyCommaWidget(widgets.ManyToManyWidget):

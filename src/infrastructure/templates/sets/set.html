@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}My Set{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center my-3">
+        <!-- Buttons to manage sets -->
+        <div>
+            <button class="btn btn-primary">Private</button>
+            <button class="btn btn-secondary">Public</button>
+            <button class="btn btn-secondary">My sets</button>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-warning">Manage Shared Links</button>
+            <button class="btn btn-success">Create new set</button>
+            <button class="btn btn-danger">Delete all</button>
+        </div>
+    </div>
+
+    <!-- Project List -->
+    <div>
+        <h3> {{ project_set.title }} </h3>
+    </div>
+    <div id="project-list">
+        {% for project in project_set.projects.all %}
+        <div class="project-item mb-3 p-3 border rounded">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5>{{ project.title }} <small class="text-muted">original</small></h5>
+                <div class="btn-group">
+                    <button class="btn btn-link text-primary">Edit</button>
+
+                    
+                    <button class="btn btn-link text-danger">Delete</button>
+                </div>
+            </div>
+            <p><strong>Industries:</strong>
+                {% for industry in project.industries.all %}
+                {{ industry }}{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+            </p>
+            <p><strong>Description:</strong> {{ project.description|slice:":150" }}... <a href="#">More</a></p>
+            <p><strong>Technologies:</strong>
+                {% for tech in project.technologies.all %}
+                {{ tech }}{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+            </p>
+            <p><strong>URL:</strong> <a href="{{ project.url }}" target="_blank">{{ project.url }}</a></p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock %}

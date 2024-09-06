@@ -1,4 +1,136 @@
 document.addEventListener('DOMContentLoaded', function () {
+    let isSetMode = false;
+    const addNewSetButton = document.querySelector('.btn-success.add-new-set');
+    const industryFilterForm = document.getElementById('industry-filters');
+    const technologyFilterForm = document.getElementById('technology-filters');
+    const projectList = document.getElementById('project-list');
+    const cancelButton = document.createElement('button');
+    let selectedProjects = new Set();
+
+    cancelButton.classList.add('btn', 'btn-secondary');
+    cancelButton.textContent = 'Cancel';
+    cancelButton.style.display = 'none';
+
+    addNewSetButton.parentNode.insertBefore(cancelButton, addNewSetButton.nextSibling);
+
+    addNewSetButton.addEventListener('click', function () {
+        if (!isSetMode) {
+            isSetMode = true;
+            addNewSetButton.textContent = 'Save changes';
+            cancelButton.style.display = 'inline-block';
+            disableFilters(true);
+            replaceProjectButtons('add');
+        } else {
+            const setName = prompt('Enter the name of your project set:');
+            if (setName) {
+                saveProjectSet(setName);
+            }
+        }
+    });
+
+    cancelButton.addEventListener('click', function () {
+        isSetMode = false;
+        addNewSetButton.textContent = 'Add new set';
+        cancelButton.style.display = 'none';
+        disableFilters(false);
+        replaceProjectButtons('reset');
+        selectedProjects.clear();
+        localStorage.removeItem('selectedProjects');
+    });
+
+
+    function disableFilters(disable) {
+        industryFilterForm.style.opacity = disable ? '0.5' : '1';
+        industryFilterForm.querySelectorAll('input').forEach(input => {
+            input.disabled = disable;
+        });
+        technologyFilterForm.style.opacity = disable ? '0.5' : '1';
+        technologyFilterForm.querySelectorAll('input').forEach(input => {
+            input.disabled = disable;
+        });
+    }
+
+    function replaceProjectButtons(action) {
+
+        const storedProjects = JSON.parse(localStorage.getItem('selectedProjects')) || [];
+        selectedProjects = new Set(storedProjects);
+
+        projectList.querySelectorAll('.project-item').forEach(item => {
+            const buttonContainer = item.querySelector('.d-flex');
+            buttonContainer.innerHTML = '';
+
+            const projectId = item.dataset.projectId;
+
+            if (action === 'add') {
+                const addButton = document.createElement('button');
+                addButton.classList.add('btn');
+                addButton.style.backgroundColor = 'blue';
+                addButton.style.color = 'white';
+                addButton.textContent = 'Add to set';
+                buttonContainer.appendChild(addButton);
+
+                if (selectedProjects.has(projectId)) {
+                    addButton.textContent = 'Remove from set';
+                    addButton.style.backgroundColor = 'red';
+                }
+
+                addButton.addEventListener('click', function () {
+                    if (selectedProjects.has(projectId)) {
+                        selectedProjects.delete(projectId);
+                        addButton.textContent = 'Add to set';
+                        addButton.style.backgroundColor = 'blue';
+                    } else {
+                        selectedProjects.add(projectId);
+                        addButton.textContent = 'Remove from set';
+                        addButton.style.backgroundColor = 'red';
+                    }
+                    localStorage.setItem('selectedProjects', JSON.stringify(Array.from(selectedProjects)));
+                });
+            } else {
+                const editButton = document.createElement('a');
+                editButton.classList.add('btn', 'btn-link');
+                editButton.textContent = 'Edit';
+                buttonContainer.appendChild(editButton);
+
+                const deleteButton = document.createElement('a');
+                deleteButton.classList.add('btn', 'btn-link', 'text-danger');
+                deleteButton.textContent = 'Delete';
+                buttonContainer.appendChild(deleteButton);
+            }
+        });
+    }
+
+    function saveProjectSet(title) {
+        const projectIds = Array.from(selectedProjects);
+        fetch('/sets/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken,
+            },
+            body: JSON.stringify({
+                title: title,
+                projects: projectIds
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert('Project set saved successfully!');
+                } else {
+                    alert('Failed to save project set: ' + data.message);
+                }
+                isSetMode = false;
+                addNewSetButton.textContent = 'Add new set';
+                cancelButton.style.display = 'none';
+                disableFilters(false);
+                replaceProjectButtons('reset');
+                selectedProjects.clear();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    }
     const debounce = (func, delay) => {
         let timeoutId;
         return function (...args) {
@@ -67,7 +199,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 const newPagination = doc.querySelector('.pagination').outerHTML;
                 document.querySelector('.pagination').outerHTML = newPagination;
 
-                // Rebind the event listeners after updating the filters and pagination
+                if (isSetMode == true) {
+                    replaceProjectButtons('add');
+                }
                 bindEventListeners();
             })
             .catch(error => {
@@ -92,7 +226,6 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         });
 
-        // Industry and Technology Link Click Handlers
         document.querySelectorAll('.industry-link').forEach(link => {
             link.addEventListener('click', function (event) {
                 event.preventDefault();
@@ -100,8 +233,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 const industryCheckbox = document.querySelector(`.industry-filter[value="${industry}"]`);
                 if (industryCheckbox.checked) {
                     industryCheckbox.checked = false;
-                }
-                else {
+                } else {
                     industryCheckbox.checked = true;
                 }
                 updateURLParams();
@@ -115,8 +247,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 const technologyCheckbox = document.querySelector(`.technology-filter[value="${technology}"]`);
                 if (technologyCheckbox.checked) {
                     technologyCheckbox.checked = false;
-                }
-                else {
+                } else {
                     technologyCheckbox.checked = true;
                 }
                 updateURLParams();

@@ -6,7 +6,7 @@
 {% block content %}
 <div class="container">
     <div class="row">
-        <div class="col-md-3">
+        <div class="col-md-2">
             <!-- Industry Filters -->
             <h5>Industry</h5>
             <input type="text" id="industry-search" class="form-control mb-3" placeholder="Search industry">
@@ -43,23 +43,40 @@
             </form>
         </div>
 
-        <div class="col-md-9">
+        <div class="col-md-10">
             <!-- Buttons and Search -->
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <div>
-                    <button class="btn btn-primary">Private</button>
+                    <button class="btn btn-secondary">Private</button>
                     <button class="btn btn-secondary">Public</button>
                     <button class="btn btn-secondary" onclick="window.location.href='{% url 'project_set' %}'">
                         My sets
                     </button>
                 </div>
                 <div class="d-flex gap-2">
-                    <button class="btn btn-success">Add new project</button>
+                    <button class="btn btn-success">Add new project</button>    
                     <form action="{% url 'upload_csv' %}" method="get" class="m-0 p-0">
                         <button type="submit" class="btn btn-success">Upload .csv</button>
                     </form>
                     <button class="btn btn-success add-new-set">Add new set</button>
                 </div>
+                <div class="modal fade" id="setNameModal" tabindex="-1" aria-labelledby="setNameModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                      <div class="modal-content">
+                        <div class="modal-header">
+                          <h5 class="modal-title" id="setNameModalLabel">Enter Set Name</h5>
+                          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                          <input type="text" id="setNameInput" class="form-control" placeholder="Enter set name">
+                        </div>
+                        <div class="modal-footer">
+                          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                          <button type="button" class="btn btn-primary" id="sendSetButton">Send</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
             </div>
 
             <!-- Search Bar -->

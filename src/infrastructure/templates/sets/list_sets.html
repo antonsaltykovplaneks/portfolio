@@ -8,9 +8,9 @@
     <div class="d-flex justify-content-between align-items-center my-3">
         <!-- Buttons to manage sets -->
         <div>
-            <button class="btn btn-primary">Private</button>
+            <button class="btn btn-secondary">Private</button>
             <button class="btn btn-secondary">Public</button>
-            <button class="btn btn-secondary" onclick="window.location.href='{% url 'project_set' %}'">
+            <button class="btn btn-primary" onclick="window.location.href='{% url 'project_set' %}'">
                 My sets
             </button>
         </div>
@@ -26,7 +26,7 @@
             <h3 class="mb-0">{{ project_set.title }}</h3>
             <div>
                 <button class="btn btn-link text-primary">Rename</button>
-                <button class="btn btn-link text-danger">Delete</button>
+                <button class="btn btn-link text-danger delete-project-set" data-project-set-id="{{ project_set.id }}">Delete</button>
                 <button class="btn btn-link text-primary toggle-svg" data-bs-toggle="collapse" data-bs-target="#project-set-{{ project_set.id }}" aria-expanded="false">
                     <svg id="svg-icon-{{ project_set.id }}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24" class="text-black">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25 12 21m0 0-3.75-3.75M12 21V3" />
@@ -65,5 +65,5 @@
     {% endfor %}
 </div>
 
-<script src="{% static 'ajax_index.js' %}" defer></script>
+<script src="{% static 'ajax_set.js' %}" defer></script>
 {% endblock %}

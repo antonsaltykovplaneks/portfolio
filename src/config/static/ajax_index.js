@@ -5,53 +5,83 @@ document.addEventListener('DOMContentLoaded', function () {
     const technologyFilterForm = document.getElementById('technology-filters');
     const projectList = document.getElementById('project-list');
     const cancelButton = document.createElement('button');
+    const setNameInput = document.createElement('input');
+    const saveSetButton = document.createElement('button');
     let selectedProjects = new Set();
 
     cancelButton.classList.add('btn', 'btn-secondary');
     cancelButton.textContent = 'Cancel';
     cancelButton.style.display = 'none';
 
-    addNewSetButton.parentNode.insertBefore(cancelButton, addNewSetButton.nextSibling);
+    setNameInput.type = 'text';
+    setNameInput.placeholder = 'Enter set name';
+    setNameInput.classList.add('form-control', 'mt-2');
+    setNameInput.style.maxWidth = '150px';
+    setNameInput.style.display = 'none';
 
+    saveSetButton.classList.add('btn', 'btn-primary', 'mt-2');
+    saveSetButton.textContent = 'Save Set';
+    saveSetButton.style.display = 'none';
+
+    addNewSetButton.parentNode.insertBefore(cancelButton, addNewSetButton.nextSibling);
+    addNewSetButton.parentNode.insertBefore(setNameInput, cancelButton.nextSibling);
+    addNewSetButton.parentNode.insertBefore(saveSetButton, setNameInput.nextSibling);
+
+    // Add new set button click handler
     addNewSetButton.addEventListener('click', function () {
         if (!isSetMode) {
             isSetMode = true;
-            addNewSetButton.textContent = 'Save changes';
-            cancelButton.style.display = 'inline-block';
-            disableFilters(true);
-            replaceProjectButtons('add');
-        } else {
-            const setName = prompt('Enter the name of your project set:');
-            if (setName) {
-                saveProjectSet(setName);
-            }
+            toggleSetMode(true);
         }
     });
 
-    cancelButton.addEventListener('click', function () {
-        isSetMode = false;
-        addNewSetButton.textContent = 'Add new set';
-        cancelButton.style.display = 'none';
-        disableFilters(false);
-        replaceProjectButtons('reset');
-        selectedProjects.clear();
-        localStorage.removeItem('selectedProjects');
+    // Save set button click handler
+    saveSetButton.addEventListener('click', function () {
+        const setName = setNameInput.value.trim();
+        if (setName) {
+            isSetMode = false;
+            setNameInput.value = '';
+            saveProjectSet(setName);
+        } else {
+            alert('Please enter a name for the project set.');
+        }
     });
 
+    // Cancel button click handler
+    cancelButton.addEventListener('click', function () {
+        isSetMode = false;
+        setNameInput.value = '';
+        toggleSetMode(false);
+        resetSelectedProjects();
+    });
 
+    // Toggle between set mode and normal mode
+    function toggleSetMode(isEnabled) {
+        addNewSetButton.style.display = isEnabled ? 'none' : 'inline-block';
+        cancelButton.style.display = isEnabled ? 'inline-block' : 'none';
+        setNameInput.style.display = isEnabled ? 'inline-block' : 'none';
+        saveSetButton.style.display = isEnabled ? 'inline-block' : 'none';
+        disableFilters(isEnabled);
+        replaceProjectButtons(isEnabled ? 'add' : 'reset');
+    }
+
+    // Enable/Disable industry and technology filters
     function disableFilters(disable) {
-        industryFilterForm.style.opacity = disable ? '0.5' : '1';
+        const opacity = disable ? '0.5' : '1';
+
+        industryFilterForm.style.opacity = opacity;
+        technologyFilterForm.style.opacity = opacity;
+
         industryFilterForm.querySelectorAll('input').forEach(input => {
             input.disabled = disable;
         });
-        technologyFilterForm.style.opacity = disable ? '0.5' : '1';
         technologyFilterForm.querySelectorAll('input').forEach(input => {
             input.disabled = disable;
         });
     }
 
+    // Replace project buttons based on action (add/remove or reset)
     function replaceProjectButtons(action) {
-
         const storedProjects = JSON.parse(localStorage.getItem('selectedProjects')) || [];
         selectedProjects = new Set(storedProjects);
 
@@ -62,46 +92,74 @@ document.addEventListener('DOMContentLoaded', function () {
             const projectId = item.dataset.projectId;
 
             if (action === 'add') {
-                const addButton = document.createElement('button');
-                addButton.classList.add('btn');
-                addButton.style.backgroundColor = 'blue';
-                addButton.style.color = 'white';
-                addButton.textContent = 'Add to set';
+                const addButton = createAddButton(projectId);
                 buttonContainer.appendChild(addButton);
-
-                if (selectedProjects.has(projectId)) {
-                    addButton.textContent = 'Remove from set';
-                    addButton.style.backgroundColor = 'red';
-                }
-
-                addButton.addEventListener('click', function () {
-                    if (selectedProjects.has(projectId)) {
-                        selectedProjects.delete(projectId);
-                        addButton.textContent = 'Add to set';
-                        addButton.style.backgroundColor = 'blue';
-                    } else {
-                        selectedProjects.add(projectId);
-                        addButton.textContent = 'Remove from set';
-                        addButton.style.backgroundColor = 'red';
-                    }
-                    localStorage.setItem('selectedProjects', JSON.stringify(Array.from(selectedProjects)));
-                });
             } else {
-                const editButton = document.createElement('a');
-                editButton.classList.add('btn', 'btn-link');
-                editButton.textContent = 'Edit';
-                buttonContainer.appendChild(editButton);
+                const editButton = createEditButton();
+                const deleteButton = createDeleteButton();
 
-                const deleteButton = document.createElement('a');
-                deleteButton.classList.add('btn', 'btn-link', 'text-danger');
-                deleteButton.textContent = 'Delete';
+                buttonContainer.appendChild(editButton);
                 buttonContainer.appendChild(deleteButton);
             }
         });
     }
 
+    // Create Add/Remove button for a project
+    function createAddButton(projectId) {
+        const addButton = document.createElement('button');
+        addButton.classList.add('btn');
+        addButton.style.backgroundColor = 'blue';
+        addButton.style.color = 'white';
+        addButton.textContent = 'Add to set';
+
+        if (selectedProjects.has(projectId)) {
+            addButton.textContent = 'Remove from set';
+            addButton.style.backgroundColor = 'red';
+        }
+
+        addButton.addEventListener('click', function () {
+            if (selectedProjects.has(projectId)) {
+                selectedProjects.delete(projectId);
+                addButton.textContent = 'Add to set';
+                addButton.style.backgroundColor = 'blue';
+            } else {
+                selectedProjects.add(projectId);
+                addButton.textContent = 'Remove from set';
+                addButton.style.backgroundColor = 'red';
+            }
+            localStorage.setItem('selectedProjects', JSON.stringify(Array.from(selectedProjects)));
+        });
+
+        return addButton;
+    }
+
+    // Create Edit button for a project
+    function createEditButton() {
+        const editButton = document.createElement('a');
+        editButton.classList.add('btn', 'btn-link');
+        editButton.textContent = 'Edit';
+        return editButton;
+    }
+
+    // Create Delete button for a project
+    function createDeleteButton() {
+        const deleteButton = document.createElement('a');
+        deleteButton.classList.add('btn', 'btn-link', 'text-danger');
+        deleteButton.textContent = 'Delete';
+        return deleteButton;
+    }
+
+    // Reset selected projects
+    function resetSelectedProjects() {
+        selectedProjects.clear();
+        localStorage.removeItem('selectedProjects');
+        toggleSetMode(false);
+    }
+
+    // Save project set to server
     function saveProjectSet(title) {
         const projectIds = Array.from(selectedProjects);
+
         fetch('/sets/', {
             method: 'POST',
             headers: {
@@ -117,20 +175,56 @@ document.addEventListener('DOMContentLoaded', function () {
             .then(data => {
                 if (data.status === 'success') {
                     alert('Project set saved successfully!');
+                    resetSelectedProjects();
                 } else {
                     alert('Failed to save project set: ' + data.message);
                 }
-                isSetMode = false;
-                addNewSetButton.textContent = 'Add new set';
-                cancelButton.style.display = 'none';
-                disableFilters(false);
-                replaceProjectButtons('reset');
-                selectedProjects.clear();
             })
-            .catch(error => {
-                console.error('Error:', error);
-            });
+            .catch(error => console.error('Error:', error));
     }
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.delete-project-set').forEach(button => {
+            button.addEventListener('click', function () {
+                const projectSetId = this.getAttribute('data-project-set-id');
+                if (confirm('Are you sure you want to delete this project set?')) {
+                    fetch(`/sets/${projectSetId}/`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCookie('csrftoken')
+                        }
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === 'success') {
+                                alert('Project set deleted successfully!');
+                                // remove the project set from the DOM
+                                this.closest('.project-item').remove();
+                            } else {
+                                alert('Failed to delete project set.');
+                            }
+                        })
+                        .catch(error => console.error('Error:', error));
+                }
+            });
+        });
+
+        // Function to get CSRF token from cookies
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    });
     const debounce = (func, delay) => {
         let timeoutId;
         return function (...args) {

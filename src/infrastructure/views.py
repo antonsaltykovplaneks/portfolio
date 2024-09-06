@@ -15,6 +15,13 @@ class ProjectSetDetailView(View):
             {"project_set": project_set},
         )
 
+    def delete(self, request, project_set_id):
+        project_set = get_object_or_404(ProjectSet, pk=project_set_id)
+        if project_set.user != request.user:
+            return JsonResponse({"status": "error", "message": "Forbidden"}, status=403)
+        project_set.delete()
+        return JsonResponse({"status": "success"})
+
 
 class ProjectSetView(View):
     def post(self, request):

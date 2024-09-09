@@ -67,16 +67,27 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Enable/Disable industry and technology filters
     function disableFilters(disable) {
-        const opacity = disable ? '0.5' : '1';
+        // const opacity = disable ? '0.5' : '1';
 
-        industryFilterForm.style.opacity = opacity;
-        technologyFilterForm.style.opacity = opacity;
+        // industryFilterForm.style.opacity = opacity;
+        // technologyFilterForm.style.opacity = opacity;
 
         industryFilterForm.querySelectorAll('input').forEach(input => {
-            input.disabled = disable;
+            if (!input.checked) {
+                input.style.opacity = '0.5';
+                input.disabled = disable;
+            }
+            else {
+                input.style.opacity = '1';
+            }
         });
         technologyFilterForm.querySelectorAll('input').forEach(input => {
-            input.disabled = disable;
+            if (!input.checked) {
+                input.disabled = disable;
+            }
+            else {
+                input.style.opacity = '1';
+            }
         });
     }
 
@@ -295,6 +306,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 if (isSetMode == true) {
                     replaceProjectButtons('add');
+                    disableFilters(true);
                 }
                 bindEventListeners();
             })
@@ -328,6 +340,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (industryCheckbox.checked) {
                     industryCheckbox.checked = false;
                 } else {
+                    if (industryCheckbox.disabled) {
+                        return;
+                    }
                     industryCheckbox.checked = true;
                 }
                 updateURLParams();
@@ -342,6 +357,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (technologyCheckbox.checked) {
                     technologyCheckbox.checked = false;
                 } else {
+                    if (technologyCheckbox.disabled) {
+                        return;
+                    }
                     technologyCheckbox.checked = true;
                 }
                 updateURLParams();

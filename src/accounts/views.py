@@ -165,8 +165,8 @@ def linkedin_login_callback(request):
             return redirect(reverse("index"))
         except HTTPException as e:
             print(f"LinkedIn login error: {e}")
-            # messages.error(request, "LinkedIn login failed", "error") # after PR merge
-            return render(request, "error_register_login_failed.html")
+            messages.error(request, "LinkedIn login failed", "error")
+            return redirect(reverse("login"))
     return redirect(reverse("login_register"))
 
 

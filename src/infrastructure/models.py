@@ -59,3 +59,23 @@ class Company(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class ProjectSet(models.Model):
+    class Meta:
+        verbose_name_plural = "Project sets"
+        verbose_name = "Project set"
+
+    title = models.CharField(max_length=255, help_text="Title of the project set")
+    projects = models.ManyToManyField(
+        "Project", related_name="project_sets", null=False
+    )
+    is_public = models.BooleanField(
+        default=False, help_text="If the project set is public or not"
+    )
+    user = models.ForeignKey("accounts.User", on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.title

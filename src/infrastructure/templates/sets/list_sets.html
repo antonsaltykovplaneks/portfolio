@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% load static core_tags %}
+
+{% block title %}My Set{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center my-3">
+        <!-- Buttons to manage sets -->
+        <div>
+            <button class="btn btn-secondary">Private</button>
+            <button class="btn btn-secondary">Public</button>
+            <button class="btn btn-primary" onclick="window.location.href='{% url 'project_set' %}'">
+                My sets
+            </button>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-warning">Manage Shared Links</button>
+            <button class="btn btn-danger">Delete all</button>
+        </div>
+    </div>
+    <!-- Sets List -->
+    {% for project_set in project_sets %}
+    <div class="card shadow-sm mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h3 class="mb-0">{{ project_set.title }}</h3>
+            <div>
+                <input type="text" class="form-control d-none rename-input" data-project-set-id="{{ project_set.id }}"
+                    placeholder="Enter new name">
+                <button class="btn btn-link text-primary rename-project-set"
+                    data-project-set-id="{{ project_set.id }}">Rename</button>
+                <button class="btn btn-link text-danger delete-project-set"
+                    data-project-set-id="{{ project_set.id }}">Delete</button>
+                <button class="btn btn-link text-primary toggle-svg" data-bs-toggle="collapse"
+                    data-bs-target="#project-set-{{ project_set.id }}" aria-expanded="false">
+                    <svg id="svg-icon-{{ project_set.id }}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                        stroke-width="1.5" stroke="currentColor" width="24" height="24" class="text-black">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M15.75 17.25 12 21m0 0-3.75-3.75M12 21V3" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <div id="project-set-{{ project_set.id }}" class="collapse">
+            <div class="card-body">
+                {% for project in project_set.projects.all %}
+                <div class="project-item mb-3 p-3 border rounded">
+                    <div class="d-flex justify-content-between align-items-center" data-project-id="{{ project.id }}">
+                        <h5>{{ project.title }} {{ project.id }} <small class="text-muted">original</small></h5>
+                        <div class="btn-group">
+                            <button class="btn btn-link text-primary">Edit</button>
+                            <button class="btn btn-link text-danger">Delete</button>
+                        </div>
+                    </div>
+                    <p><strong>Industries:</strong>
+                        {% for industry in project.industries.all %}
+                        {{ industry }}{% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+                    </p>
+                    <p><strong>Description:</strong>
+                        {% if project.description|length > 150 %}
+                        <span class="short-description">{{ project.description|truncate_description }}</span>
+                        <span class="full-description d-none">{{ project.description }}</span>
+                        <a href="#" class="toggle-description"
+                            data-full-description="{{ project.description }}">More</a>
+                        {% else %}
+                        <span>{{ project.description }}</span>
+                        {% endif %}
+                    </p>
+                    <p><strong>Technologies:</strong>
+                        {% for tech in project.technologies.all %}
+                        {{ tech }}{% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+                    </p>
+                    <p><strong>URL:</strong> <a href="{{ project.url }}" target="_blank">{{ project.url }}</a></p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<script src="{% static 'ajax_set.js' %}" defer></script>
+{% endblock %}

@@ -22,6 +22,21 @@ class ProjectSetDetailView(View):
         project_set.delete()
         return JsonResponse({"status": "success"})
 
+    def put(self, request, project_set_id):
+        project_set = get_object_or_404(ProjectSet, pk=project_set_id)
+        data = json.loads(request.body)
+        title = data.get("title")
+        project_ids = data.get("projects")
+
+        if title and project_ids:
+            project_set.title = title
+            project_set.projects.clear()
+            projects = Project.objects.filter(id__in=project_ids)
+            project_set.projects.add(*projects)
+            project_set.save()
+
+            return JsonResponse({"status": "success"})
+        return JsonResponse({"status": "error", "message": "Invalid data"})
 
 class ProjectSetView(View):
     def post(self, request):

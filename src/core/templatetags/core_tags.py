@@ -738,6 +738,11 @@ def is_hidden_input(field):
     from django.forms import HiddenInput
     return isinstance(field.field.widget, HiddenInput)
 
+@register.filter
+def truncate_description(description, length=150):
+    if len(description) > length:
+        return description[:length] + '...'
+    return description
 
 # capture tag
 

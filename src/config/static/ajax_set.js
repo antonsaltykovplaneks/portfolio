@@ -14,11 +14,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     .then(response => response.json())
                     .then(data => {
                         if (data.status === 'success') {
-                            alert('Project set deleted successfully!');
                             // Remove the project set from the DOM
                             this.closest('.card').remove();
-                        } else {
-                            alert('Failed to delete project set.');
                         }
                     })
                     .catch(error => console.error('Error:', error));
@@ -98,18 +95,15 @@ document.addEventListener('DOMContentLoaded', function () {
                         )
                     })
                 })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        alert('Project set renamed successfully!');
-                        inputField.classList.add('d-none');
-                        const header = inputField.closest('.card-header');
-                        header.querySelector('h3').textContent = newName;
-                    } else {
-                        alert('Failed to rename project set: ' + data.message);
-                    }
-                })
-                .catch(error => console.error('Error:', error));
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            inputField.classList.add('d-none');
+                            const header = inputField.closest('.card-header');
+                            header.querySelector('h3').textContent = newName;
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
             }
         });
     });

@@ -2,6 +2,7 @@ import json
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.views import View
+from django.contrib import messages
 
 from infrastructure.models import Project, ProjectSet
 
@@ -18,6 +19,7 @@ class ProjectSetDetailView(View):
     def delete(self, request, project_set_id):
         project_set = get_object_or_404(ProjectSet, pk=project_set_id)
         if project_set.user != request.user:
+            messages.error(request, "Forbidden")
             return JsonResponse({"status": "error", "message": "Forbidden"}, status=403)
         project_set.delete()
         return JsonResponse({"status": "success"})
@@ -36,7 +38,9 @@ class ProjectSetDetailView(View):
             project_set.save()
 
             return JsonResponse({"status": "success"})
+        messages.error(request, "Invalid data")
         return JsonResponse({"status": "error", "message": "Invalid data"})
+
 
 class ProjectSetView(View):
     def post(self, request):
@@ -51,6 +55,8 @@ class ProjectSetView(View):
             project_set.save()
 
             return JsonResponse({"status": "success"})
+
+        messages.error(request, "Invalid data")
         return JsonResponse({"status": "error", "message": "Invalid data"})
 
     def get(self, request):

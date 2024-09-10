@@ -66,7 +66,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     });
-
     // Update project set
     document.querySelectorAll('.rename-project-set').forEach(button => {
         button.addEventListener('click', function () {
@@ -76,11 +75,15 @@ document.addEventListener('DOMContentLoaded', function () {
             const currentTitle = titleElement.textContent;
 
             if (this.textContent === 'Rename') {
-                // Create an input field with the current title
-                const inputField = document.createElement('input');
+                let inputField = document.querySelector('.input-field-rename')
+                if (inputField) {
+                    return;
+                }
+                inputField = document.createElement('input');
                 inputField.type = 'text';
                 inputField.value = currentTitle;
                 inputField.classList.add('form-control');
+                inputField.classList.add('input-field-rename');
                 inputField.style.width = '80%';
 
                 // Replace the title with the input field
@@ -95,11 +98,13 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                 });
 
+                button.addEventListener('click', function () {
+                    saveTitle(inputField, titleElement, header, projectSetId, button);
+                });
+
                 // Revert to the original title if input loses focus without saving
                 inputField.addEventListener('blur', function () {
                     if (button.textContent === 'Save') {
-                        header.replaceChild(titleElement, inputField);
-                        button.textContent = 'Rename';
                         saveTitle(inputField, titleElement, header, projectSetId, button);
                     }
                 });
@@ -134,6 +139,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         titleElement.textContent = newName;
                         header.replaceChild(titleElement, inputField);
                         button.textContent = 'Rename';
+                        inputField = null;
                     }
                 })
                 .catch(error => console.error('Error:', error));

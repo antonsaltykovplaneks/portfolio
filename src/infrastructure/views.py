@@ -6,13 +6,33 @@ from django.shortcuts import get_object_or_404, render
 from django.views import View
 from rest_framework import generics
 
-from infrastructure.models import Industry, Project, ProjectSet, Technology
+from infrastructure.models import (
+    Industry,
+    Project,
+    ProjectSet,
+    ProjectSetLink,
+    Technology,
+)
 from infrastructure.serializers import IndustrySerializer, TechnologySerializer
+
+
+def generate_project_set_link(request, project_set_id):
+    if request.method != "POST":
+        return JsonResponse(
+            {"status": "error", "message": "Method not allowed"}, status=405
+        )
+    project_set = get_object_or_404(ProjectSet, pk=project_set_id)
+    link = project_set.create_link()
+    messages.success(
+        request, "Link generated and copied to clipboard - {}".format(link)
+    )
+    return JsonResponse({"status": "success", "link": link})
 
 
 class ProjectSetDetailView(View):
     def get(self, request, project_set_id):
-        project_set = get_object_or_404(ProjectSet, pk=project_set_id)
+        link = get_object_or_404(ProjectSetLink, uuid=project_set_id)
+        project_set = link.project_set
         return render(
             request,
             "sets/set.html",
@@ -20,6 +40,7 @@ class ProjectSetDetailView(View):
         )
 
     def delete(self, request, project_set_id):
+        project_set_id = int(project_set_id)
         project_set = get_object_or_404(ProjectSet, pk=project_set_id)
         if project_set.user != request.user:
             messages.error(request, "Forbidden")
@@ -28,6 +49,7 @@ class ProjectSetDetailView(View):
         return JsonResponse({"status": "success"})
 
     def put(self, request, project_set_id):
+        project_set_id = int(project_set_id)
         project_set = get_object_or_404(ProjectSet, pk=project_set_id)
         data = json.loads(request.body)
         title = data.get("title")
@@ -80,6 +102,10 @@ class ProjectView(View):
 
     def delete(self, request, project_id):
         project = get_object_or_404(Project, pk=project_id)
+        projects_sets = ProjectSet.objects.filter(projects__id=project_id)
+        for project_set in projects_sets:
+            if not project_set.projects.exclude(id=project_id).exists():
+                project_set.delete()
         project.delete()
         return JsonResponse({"status": "success"})
 

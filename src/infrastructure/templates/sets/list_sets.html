@@ -10,7 +10,7 @@
         <div>
             <button class="btn btn-secondary">Private</button>
             <button class="btn btn-secondary">Public</button>
-            <button class="btn btn-primary" onclick="window.location.href='{% url 'project_set' %}'">
+            <button class="btn btn-primary" onclick="window.location.href='{% url 'project_set_list' %}'">
                 My sets
             </button>
         </div>
@@ -31,6 +31,7 @@
                     data-project-set-id="{{ project_set.id }}">Rename</button>
                 <button class="btn btn-link text-danger delete-project-set"
                     data-project-set-id="{{ project_set.id }}">Delete</button>
+                <button class="btn btn-link share-project-set" data-project-set-id="{{ project_set.id }}">Share</button>
                 <button class="btn btn-link text-primary toggle-svg" data-bs-toggle="collapse"
                     data-bs-target="#project-set-{{ project_set.id }}" aria-expanded="false">
                     <svg id="svg-icon-{{ project_set.id }}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
@@ -65,8 +66,18 @@
                         </p>
 
                         <p><strong>Description:</strong>
-                            <span class="editable-description">{{ project.description }}</span>
+                            <span class="editable-description">
+                                {% if project.description|length > 200 %}
+                                {{ project.description|slice:":200" }}...<span class="more-text"
+                                    style="display: none;">{{ project.description|slice:"200:" }}</span>
+                                <button class="btn btn-link show-description" data-project-id="{{ project.id }}"
+                                    data-state="hidden">Show</button>
+                                {% else %}
+                                {{ project.description }}
+                                {% endif %}
+                            </span>
                         </p>
+
 
                         <p><strong>Technologies:</strong>
                             <span class="editable-technologies">
@@ -96,5 +107,5 @@
     {% endfor %}
 </div>
 
-<script src="{% static 'ajax_set.js' %}" defer></script>
+<script src="{% static 'ajax_sets.js' %}" defer></script>
 {% endblock %}

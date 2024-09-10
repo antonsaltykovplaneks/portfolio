@@ -25,6 +25,32 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
+    document.querySelectorAll('.delete-project').forEach(button => {
+        button.addEventListener('click', function () {
+            const projectId = this.getAttribute('data-project-id');
+            let text = 'Are you sure you want to delete this project?';
+            if (document.querySelectorAll(`.project-item[data-project-id="${projectId}"]`).length === 1) {
+                text = "This is the only project in the set. Deleting this project will delete the set. Are you sure you want to delete this project?";
+            }
+            if (confirm(text)) {
+                fetch(`/projects/${projectId}/`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            document.querySelector(`.project-item[data-project-id="${projectId}"]`).remove();
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+            }
+        });
+    });
+
     // Function to get CSRF token from cookies
     function getCookie(name) {
         let cookieValue = null;

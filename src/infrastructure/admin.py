@@ -11,7 +11,7 @@ from import_export.forms import ImportForm
 from accounts.models import User
 from infrastructure.elastic import ProjectDocument
 
-from .models import Company, Industry, Project, Technology, ProjectSet
+from .models import Company, Industry, Project, ProjectSet, Technology
 
 
 @admin.register(Company)

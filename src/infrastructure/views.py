@@ -78,6 +78,11 @@ class ProjectView(View):
 
         return JsonResponse({"status": "success"})
 
+    def delete(self, request, project_id):
+        project = get_object_or_404(Project, pk=project_id)
+        project.delete()
+        return JsonResponse({"status": "success"})
+
 
 class ProjectSetView(View):
     def post(self, request):

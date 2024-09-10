@@ -81,8 +81,10 @@
                         </p>
 
                         <div class="d-flex justify-content-end mt-3">
-                            <button type="button" class="btn btn-link text-primary edit-project">Edit</button>
-                            <button type="submit" class="btn btn-link text-success d-none save-project">Save</button>
+                            <button type="button" class="btn btn-link text-primary edit-project me-2">Edit</button>
+                            <button type="button" class="btn btn-danger delete-project me-2"
+                                data-project-id="{{ project.id }}">Delete</button>
+                            <button type="submit" class="btn btn-success d-none save-project me-2">Save</button>
                             <button class="cancel-edit btn btn-secondary d-none">Cancel</button>
                         </div>
                     </form>

@@ -153,7 +153,9 @@ def search_projects(
 
     search = search.filter("term", user__id=user.id)
     search.aggs.bucket("technologies", "terms", field="technologies.raw", size=10000)
-    industries_agg = search.aggs.bucket("industries", "terms", field="industries.raw", size=10000)
+    industries_agg = search.aggs.bucket(
+        "industries", "terms", field="industries.raw", size=10000
+    )
     # Add a sub-aggregation to calculate potential projects if each industry filter is applied
     industries_agg.bucket(
         "potential_projects",

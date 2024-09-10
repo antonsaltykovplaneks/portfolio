@@ -1,4 +1,6 @@
 document.addEventListener('DOMContentLoaded', function () {
+    const csrfToken = getCookie('csrftoken');
+
     // Delete project set button click handler
     document.querySelectorAll('.delete-project-set').forEach(button => {
         button.addEventListener('click', function () {
@@ -8,7 +10,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRFToken': getCookie('csrftoken')
+                        'X-CSRFToken': csrfToken
                     }
                 })
                     .then(response => response.json())
@@ -119,7 +121,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': getCookie('csrftoken')
+                    'X-CSRFToken': csrfToken
                 },
                 body: JSON.stringify({
                     title: newName,
@@ -146,18 +148,142 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
+    fetchIndustries();
+    fetchTechnologies();
+
+    document.querySelectorAll('.edit-project').forEach(button => {
+        button.addEventListener('click', function () {
+            const projectItem = this.closest('.project-item');
+            toggleEditMode(projectItem, true);
+        });
+    });
+
+    document.querySelectorAll('.edit-form').forEach(form => {
+        form.addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            const projectItem = this.closest('.project-item');
+            const projectId = projectItem.getAttribute('data-project-id');
+
+            const title = projectItem.querySelector('input[name="title"]').value;
+            const description = projectItem.querySelector('textarea[name="description"]').value;
+            const industries = Array.from(projectItem.querySelector('select[name="industries"]').selectedOptions).map(option => option.value);
+            const technologies = Array.from(projectItem.querySelector('select[name="technologies"]').selectedOptions).map(option => option.value);
+            const url = projectItem.querySelector('input[name="url"]').value;
+
+            saveProject(projectId, title, description, industries, technologies, url, projectItem);
+        });
+    });
+
+    function toggleEditMode(projectItem, isEditMode) {
+        const fields = ['title', 'description', 'industries', 'technologies', 'url'];
+        fields.forEach(field => {
+            const spanElement = projectItem.querySelector(`.editable-${field}`);
+            if (isEditMode) {
+                isOriginalLabel = document.querySelector('small[name="is-original-project"]');
+                if (isOriginalLabel) {
+                    isOriginalLabel.classList.add('d-none');
+                }
+                let inputElement;
+                if (field === 'description') {
+                    inputElement = document.createElement('textarea');
+                    inputElement.value = spanElement.textContent.trim();
+                } else if (field === 'industries' || field === 'technologies') {
+                    inputElement = createMultiSelectField(field, spanElement);
+                } else {
+                    inputElement = document.createElement('input');
+                    inputElement.type = 'text';
+                    inputElement.value = spanElement.textContent.trim();
+                }
+                inputElement.name = field;
+                inputElement.classList.add('form-control', 'mb-2');
+                spanElement.replaceWith(inputElement);
+            } else {
+                const inputElement = projectItem.querySelector(`[name="${field}"]`);
+                const newSpan = document.createElement('span');
+                if (field === 'industries' || field === 'technologies') {
+                    newSpan.textContent = Array.from(inputElement.selectedOptions).map(option => option.text).join(', ');
+                } else {
+                    newSpan.textContent = inputElement.value;
+                }
+                newSpan.classList.add(`editable-${field}`);
+                inputElement.replaceWith(newSpan);
+                isOriginalLabel = document.querySelector('small[name="is-original-project"]');
+                if (isOriginalLabel) {
+                    isOriginalLabel.classList.remove('d-none');
+                    isOriginalLabel.text = 'updated';
                 }
             }
-        }
-        return cookieValue;
+        });
+
+        projectItem.querySelector('.edit-project').classList.toggle('d-none', isEditMode);
+        projectItem.querySelector('.save-project').classList.toggle('d-none', !isEditMode);
     }
+
+    function createMultiSelectField(field, spanElement) {
+        const selectElement = document.createElement('select');
+        selectElement.name = field;
+        selectElement.multiple = true;
+        selectElement.classList.add('form-control', 'mb-2');
+
+        const optionsData = field === 'industries' ? industriesOptions : technologiesOptions;
+
+        optionsData.forEach(optionData => {
+            const optionElement = document.createElement('option');
+            optionElement.value = optionData.id;
+            optionElement.text = optionData.title;
+
+            if (spanElement.textContent.includes(optionData.title)) {
+                optionElement.selected = true;
+            }
+
+            selectElement.appendChild(optionElement);
+        });
+
+        return selectElement;
+    }
+
+    function saveProject(projectId, title, description, industries, technologies, url, projectItem) {
+        fetch(`/projects/${projectId}/`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({
+                title: title,
+                description: description,
+                industries: industries,
+                technologies: technologies,
+                url: url
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    toggleEditMode(projectItem, false);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    }
+
+    function fetchIndustries() {
+        fetch('/industries/')
+            .then(response => response.json())
+            .then(data => {
+                industriesOptions = data;
+            })
+            .catch(error => console.error('Error fetching industries:', error));
+    }
+
+    function fetchTechnologies() {
+        fetch('/technologies/')
+            .then(response => response.json())
+            .then(data => {
+                technologiesOptions = data;
+            })
+            .catch(error => console.error('Error fetching technologies:', error));
+    }
+    let industriesOptions = [];
+    let technologiesOptions = [];
 });

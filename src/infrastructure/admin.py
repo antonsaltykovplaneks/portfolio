@@ -142,7 +142,9 @@ class ProjectResource(resources.ModelResource):
         industry_ids = list()
         if industries:
             for industry in industries.split(","):
-                industry_obj = Industry.objects.filter(title=industry.lower()).first()
+                industry_obj = Industry.objects.filter(
+                    title__iexact=industry.lower()
+                ).first()
                 if not industry_obj:
                     industry_obj = Industry.objects.create(title=industry)
                 industry_ids.append(industry_obj.id)

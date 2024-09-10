@@ -44,35 +44,50 @@
         <div id="project-set-{{ project_set.id }}" class="collapse">
             <div class="card-body">
                 {% for project in project_set.projects.all %}
-                <div class="project-item mb-3 p-3 border rounded">
-                    <div class="d-flex justify-content-between align-items-center" data-project-id="{{ project.id }}">
-                        <h5>{{ project.title }} <small class="text-muted">original</small></h5>
-                        <div class="btn-group">
-                            <button class="btn btn-link text-primary">Edit</button>
-                            <button class="btn btn-link text-danger">Delete</button>
+                <div class="project-item mb-3 p-3 border rounded" data-project-id="{{ project.id }}">
+                    <form class="edit-form">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5>
+                                <span class="editable-title">{{ project.title }}</span>
+                                <small class="text-muted is-original-project" name="is-original-project">
+                                    {% if project.is_diff_from_original %}
+                                    updated
+                                    {% else %}original{% endif %}</small>
+                            </h5>
                         </div>
-                    </div>
-                    <p><strong>Industries:</strong>
-                        {% for industry in project.industries.all %}
-                        {{ industry }}{% if not forloop.last %}, {% endif %}
-                        {% endfor %}
-                    </p>
-                    <p><strong>Description:</strong>
-                        {% if project.description|length > 150 %}
-                        <span class="short-description">{{ project.description|truncate_description }}</span>
-                        <span class="full-description d-none">{{ project.description }}</span>
-                        <a href="#" class="toggle-description"
-                            data-full-description="{{ project.description }}">More</a>
-                        {% else %}
-                        <span>{{ project.description }}</span>
-                        {% endif %}
-                    </p>
-                    <p><strong>Technologies:</strong>
-                        {% for tech in project.technologies.all %}
-                        {{ tech }}{% if not forloop.last %}, {% endif %}
-                        {% endfor %}
-                    </p>
-                    <p><strong>URL:</strong> <a href="{{ project.url }}" target="_blank">{{ project.url }}</a></p>
+
+                        <p><strong>Industries:</strong>
+                            <span class="editable-industries">
+                                {% for industry in project.industries.all %}
+                                {{ industry }}{% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                            </span>
+                        </p>
+
+                        <p><strong>Description:</strong>
+                            <span class="editable-description">{{ project.description }}</span>
+                        </p>
+
+                        <p><strong>Technologies:</strong>
+                            <span class="editable-technologies">
+                                {% for tech in project.technologies.all %}
+                                {{ tech }}{% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                            </span>
+                        </p>
+
+                        <p><strong>URL:</strong>
+                            <a href="{{ project.url }}" target="_blank" class="editable-url">{{ project.url }}</a>
+                        </p>
+
+                        <div class="d-flex justify-content-end mt-3">
+                            <button type="button" class="btn btn-link text-primary edit-project me-2">Edit</button>
+                            <button type="button" class="btn btn-danger delete-project me-2"
+                                data-project-id="{{ project.id }}">Delete</button>
+                            <button type="submit" class="btn btn-success d-none save-project me-2">Save</button>
+                            <button class="cancel-edit btn btn-secondary d-none">Cancel</button>
+                        </div>
+                    </form>
                 </div>
                 {% endfor %}
             </div>

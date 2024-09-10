@@ -1,10 +1,13 @@
 import json
+
+from django.contrib import messages
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.views import View
-from django.contrib import messages
+from rest_framework import generics
 
-from infrastructure.models import Project, ProjectSet
+from infrastructure.models import Industry, Project, ProjectSet, Technology
+from infrastructure.serializers import IndustrySerializer, TechnologySerializer
 
 
 class ProjectSetDetailView(View):
@@ -34,12 +37,51 @@ class ProjectSetDetailView(View):
             project_set.title = title
             project_set.projects.clear()
             projects = Project.objects.filter(id__in=project_ids)
-            project_set.projects.add(*projects)
+            for project in projects:
+                project_set.add_project(project)
             project_set.save()
 
             return JsonResponse({"status": "success"})
         messages.error(request, "Invalid data")
         return JsonResponse({"status": "error", "message": "Invalid data"})
+
+
+class ProjectView(View):
+    def put(self, request, project_id):
+        project = get_object_or_404(Project, pk=project_id)
+        data = json.loads(request.body)
+
+        title = data.get("title")
+        description = data.get("description")
+        technology_ids = data.get("technologies")
+        industry_ids = data.get("industries")
+        url = data.get("url")
+
+        if title:
+            project.title = title
+        if description:
+            project.description = description
+        if technology_ids:
+            project.technologies.clear()
+            for tech_id in technology_ids:
+                tech_obj = Technology.objects.filter(id=tech_id).first()
+                project.technologies.add(tech_obj)
+        if industry_ids:
+            project.industries.clear()
+            for industry_id in industry_ids:
+                industry_obj = Industry.objects.filter(id=industry_id).first()
+                project.industries.add(industry_obj)
+        if url:
+            project.url = url
+
+        project.save()
+
+        return JsonResponse({"status": "success"})
+
+    def delete(self, request, project_id):
+        project = get_object_or_404(Project, pk=project_id)
+        project.delete()
+        return JsonResponse({"status": "success"})
 
 
 class ProjectSetView(View):
@@ -51,7 +93,8 @@ class ProjectSetView(View):
         if title and project_ids:
             project_set = ProjectSet.objects.create(title=title, user=request.user)
             projects = Project.objects.filter(id__in=project_ids)
-            project_set.projects.add(*projects)
+            for project in projects:
+                project_set.add_project(project)
             project_set.save()
 
             return JsonResponse({"status": "success"})
@@ -66,3 +109,13 @@ class ProjectSetView(View):
             "sets/list_sets.html",
             {"project_sets": project_sets},
         )
+
+
+class IndustryListView(generics.ListAPIView):
+    queryset = Industry.objects.all()
+    serializer_class = IndustrySerializer
+
+
+class TechnologyListView(generics.ListAPIView):
+    queryset = Technology.objects.all()
+    serializer_class = TechnologySerializer

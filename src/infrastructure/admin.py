@@ -11,7 +11,7 @@ from import_export.forms import ImportForm
 from accounts.models import User
 from infrastructure.elastic import ProjectDocument
 
-from .models import Company, Industry, Project, Technology, ProjectSet
+from .models import Company, Industry, Project, ProjectSet, Technology
 
 
 @admin.register(Company)
@@ -142,7 +142,9 @@ class ProjectResource(resources.ModelResource):
         industry_ids = list()
         if industries:
             for industry in industries.split(","):
-                industry_obj = Industry.objects.filter(title=industry.lower()).first()
+                industry_obj = Industry.objects.filter(
+                    title__iexact=industry.lower()
+                ).first()
                 if not industry_obj:
                     industry_obj = Industry.objects.create(title=industry)
                 industry_ids.append(industry_obj.id)

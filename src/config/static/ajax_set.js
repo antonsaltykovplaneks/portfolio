@@ -158,6 +158,13 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
+    document.querySelectorAll('.cancel-edit').forEach(button => {
+        button.addEventListener('click', function () {
+            const projectItem = this.closest('.project-item');
+            toggleEditMode(projectItem, false, true);
+        });
+    });
+
     document.querySelectorAll('.edit-form').forEach(form => {
         form.addEventListener('submit', function (event) {
             event.preventDefault();
@@ -175,7 +182,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    function toggleEditMode(projectItem, isEditMode) {
+    function toggleEditMode(projectItem, isEditMode, isCancel = false) {
         const fields = ['title', 'description', 'industries', 'technologies', 'url'];
         fields.forEach(field => {
             const spanElement = projectItem.querySelector(`.editable-${field}`);
@@ -198,9 +205,16 @@ document.addEventListener('DOMContentLoaded', function () {
                 inputElement.name = field;
                 inputElement.classList.add('form-control', 'mb-2');
                 spanElement.replaceWith(inputElement);
+
+                // Store original value
+                projectItem.dataset[`original${field.charAt(0).toUpperCase() + field.slice(1)}`] = inputElement.value;
             } else {
                 const inputElement = projectItem.querySelector(`[name="${field}"]`);
                 const newSpan = document.createElement('span');
+                if (isCancel) {
+                    // Restore original value
+                    inputElement.value = projectItem.dataset[`original${field.charAt(0).toUpperCase() + field.slice(1)}`];
+                }
                 if (field === 'industries' || field === 'technologies') {
                     newSpan.textContent = Array.from(inputElement.selectedOptions).map(option => option.text).join(', ');
                 } else {
@@ -218,6 +232,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         projectItem.querySelector('.edit-project').classList.toggle('d-none', isEditMode);
         projectItem.querySelector('.save-project').classList.toggle('d-none', !isEditMode);
+        projectItem.querySelector('.cancel-edit').classList.toggle('d-none', !isEditMode);
     }
 
     function createMultiSelectField(field, spanElement) {

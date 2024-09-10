@@ -80,8 +80,11 @@
                             <a href="{{ project.url }}" target="_blank" class="editable-url">{{ project.url }}</a>
                         </p>
 
-                        <button type="button" class="btn btn-link text-primary edit-project">Edit</button>
-                        <button type="submit" class="btn btn-link text-success d-none save-project">Save</button>
+                        <div class="d-flex justify-content-end mt-3">
+                            <button type="button" class="btn btn-link text-primary edit-project">Edit</button>
+                            <button type="submit" class="btn btn-link text-success d-none save-project">Save</button>
+                            <button class="cancel-edit btn btn-secondary d-none">Cancel</button>
+                        </div>
                     </form>
                 </div>
                 {% endfor %}

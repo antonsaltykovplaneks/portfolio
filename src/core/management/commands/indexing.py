@@ -1,19 +1,17 @@
-from django.core.management.base import BaseCommand
-from elasticsearch.helpers import bulk
-
-from infrastructure.elastic import ProjectDocument
-from infrastructure.models import Project
+from django_elasticsearch_dsl.management.commands.search_index import (
+    Command as SearchIndexCommand,
+)
 
 
-class Command(BaseCommand):
+class Command(SearchIndexCommand):
     def handle(self, *args, **options):
-        # Index all origin projects
-        actions = (
-            ProjectDocument.get_indexing_action(project)
-            for project in Project.objects.filter(original_project__isnull=True).all()
-        )
-        index_result = bulk(ProjectDocument._get_connection(), actions)
+        models = self._get_models(["infrastructure"])
 
-        self.stdout.write(
-            self.style.SUCCESS(f"Successfully indexed {index_result[0]} documents")
-        )
+        # We need to know if and which aliases exist to mitigate naming
+        # conflicts with indices, therefore this is needed regardless
+        # of using the '--use-alias' arg.
+        aliases = []
+        for index in self.es_conn.indices.get_alias().values():
+            aliases += index["aliases"].keys()
+
+        self._rebuild(models, aliases, options)

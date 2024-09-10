@@ -71,42 +71,74 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('.rename-project-set').forEach(button => {
         button.addEventListener('click', function () {
             const projectSetId = this.getAttribute('data-project-set-id');
-            const inputField = document.querySelector(`.rename-input[data-project-set-id="${projectSetId}"]`);
-            const newName = inputField.value.trim();
+            const header = this.closest('.card-header');
+            const titleElement = header.querySelector('h3');
+            const currentTitle = titleElement.textContent;
 
-            if (inputField.classList.contains('d-none')) {
-                inputField.classList.remove('d-none');
+            if (this.textContent === 'Rename') {
+                // Create an input field with the current title
+                const inputField = document.createElement('input');
+                inputField.type = 'text';
+                inputField.value = currentTitle;
+                inputField.classList.add('form-control');
+                inputField.style.width = '80%';
+
+                // Replace the title with the input field
+                header.replaceChild(inputField, titleElement);
                 inputField.focus();
-            } else if (newName) {
-                fetch(`/sets/${projectSetId}/`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': getCookie('csrftoken')
-                    },
-                    body: JSON.stringify({
-                        title: newName,
-                        projects: Array.from(document.querySelectorAll(`#project-set-${projectSetId} .project-item`)).map(
-                            item => {
-                                const projectIdElement = item.querySelector('[data-project-id]');
-                                const projectId = projectIdElement ? projectIdElement.getAttribute('data-project-id') : null;
-                                return projectId;
-                            }
-                        )
-                    })
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.status === 'success') {
-                            inputField.classList.add('d-none');
-                            const header = inputField.closest('.card-header');
-                            header.querySelector('h3').textContent = newName;
-                        }
-                    })
-                    .catch(error => console.error('Error:', error));
+                this.textContent = 'Save';
+
+                // Save the new title on Enter key press
+                inputField.addEventListener('keypress', function (event) {
+                    if (event.key === 'Enter') {
+                        saveTitle(inputField, titleElement, header, projectSetId, button);
+                    }
+                });
+
+                // Revert to the original title if input loses focus without saving
+                inputField.addEventListener('blur', function () {
+                    if (button.textContent === 'Save') {
+                        header.replaceChild(titleElement, inputField);
+                        button.textContent = 'Rename';
+                        saveTitle(inputField, titleElement, header, projectSetId, button);
+                    }
+                });
             }
         });
     });
+
+    function saveTitle(inputField, titleElement, header, projectSetId, button) {
+        const newName = inputField.value.trim();
+        if (newName) {
+            fetch(`/sets/${projectSetId}/`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    title: newName,
+                    projects: Array.from(document.querySelectorAll(`#project-set-${projectSetId} .project-item`)).map(
+                        item => {
+                            const projectIdElement = item.querySelector('[data-project-id]');
+                            const projectId = projectIdElement ? projectIdElement.getAttribute('data-project-id') : null;
+                            return projectId;
+                        }
+                    )
+                })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        // Replace the input field with the new title
+                        titleElement.textContent = newName;
+                        header.replaceChild(titleElement, inputField);
+                        button.textContent = 'Rename';
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        }
+    }
 
     function getCookie(name) {
         let cookieValue = null;

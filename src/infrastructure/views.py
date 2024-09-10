@@ -1,8 +1,9 @@
 import json
+
+from django.contrib import messages
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.views import View
-from django.contrib import messages
 
 from infrastructure.models import Project, ProjectSet
 
@@ -34,7 +35,8 @@ class ProjectSetDetailView(View):
             project_set.title = title
             project_set.projects.clear()
             projects = Project.objects.filter(id__in=project_ids)
-            project_set.projects.add(*projects)
+            for project in projects:
+                project_set.add_project(project)
             project_set.save()
 
             return JsonResponse({"status": "success"})
@@ -51,7 +53,8 @@ class ProjectSetView(View):
         if title and project_ids:
             project_set = ProjectSet.objects.create(title=title, user=request.user)
             projects = Project.objects.filter(id__in=project_ids)
-            project_set.projects.add(*projects)
+            for project in projects:
+                project_set.add_project(project)
             project_set.save()
 
             return JsonResponse({"status": "success"})

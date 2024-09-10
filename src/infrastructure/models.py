@@ -13,10 +13,51 @@ class Project(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     url = models.URLField(null=True, blank=True)
 
+    original_project = models.ForeignKey(
+        "Project", on_delete=models.CASCADE, null=True, blank=True
+    )
     user = models.ForeignKey("accounts.User", on_delete=models.CASCADE)
 
     industries = models.ManyToManyField("Industry", related_name="projects")
     technologies = models.ManyToManyField("Technology", related_name="projects")
+
+    @property
+    def is_diff_from_original(self):
+        if not self.original_project:
+            return False
+
+        fields_to_compare = ["title", "description", "image", "url"]
+
+        for field in fields_to_compare:
+            if getattr(self, field) != getattr(self.original_project, field):
+                return True
+
+        if set(self.industries.all()) != set(self.original_project.industries.all()):
+            return True
+
+        if set(self.technologies.all()) != set(
+            self.original_project.technologies.all()
+        ):
+            return True
+
+        return False
+
+    def is_original(self):
+        return self.original_project is None
+
+    def create_copy(self, user):
+        copy = Project.objects.create(
+            title=self.title,
+            description=self.description,
+            image=self.image,
+            url=self.url,
+            original_project=self,
+            user=user,
+            updated_at=self.updated_at,
+        )
+        copy.industries.set(self.industries.all())
+        copy.technologies.set(self.technologies.all())
+        return copy
 
     def industries_indexing(self):
         return [industry.title for industry in self.industries.all()]
@@ -76,6 +117,10 @@ class ProjectSet(models.Model):
     user = models.ForeignKey("accounts.User", on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def add_project(self, project):
+        project_copy = project.create_copy(self.user)
+        self.projects.add(project_copy)
 
     def __str__(self):
         return self.title

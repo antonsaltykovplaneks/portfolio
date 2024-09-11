@@ -25,6 +25,26 @@
         </div>
     </div>
 
+    <!-- Sharing Popup -->
+    <div class="modal fade" id="sharePopup" tabindex="-1" aria-labelledby="sharePopupLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="sharePopupLabel">Share Project Set</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <input type="email" id="recipientEmail" class="form-control"
+                            placeholder="Enter recipient email">
+                    </div>
+                    <button class="btn btn-primary mt-3" id="shareEmailButton">Share</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
     <div class="d-flex justify-content-between align-items-center my-3">
         <!-- Buttons to manage sets -->
         <div>
@@ -52,6 +72,8 @@
                 <button class="btn btn-link text-danger delete-project-set"
                     data-project-set-id="{{ project_set.id }}">Delete</button>
                 <button class="btn btn-link share-project-set" data-project-set-id="{{ project_set.id }}">Share</button>
+                <button class="btn btn-link share-email-project-set" data-project-set-id="{{ project_set.id }}">Share
+                    via email</button>
                 <button class="btn btn-link text-primary toggle-svg" data-bs-toggle="collapse"
                     data-bs-target="#project-set-{{ project_set.id }}" aria-expanded="false">
                     <svg id="svg-icon-{{ project_set.id }}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"

@@ -119,9 +119,14 @@ class ProjectSet(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    def create_link(self):
-        link = ProjectSetLink.objects.create(project_set=self)
-        return link.get_absolute_url()
+    def get_link(self):
+        if ProjectSetLink.objects.filter(project_set=self).exists():
+            return ProjectSetLink.objects.get(project_set=self).absolute_url
+
+    def get_or_create_link(self) -> str:
+        if ProjectSetLink.objects.filter(project_set=self).exists():
+            return ProjectSetLink.objects.get(project_set=self).absolute_url
+        return ProjectSetLink.objects.create(project_set=self).absolute_url
 
     def add_project(self, project):
         project_copy = project.create_copy(self.user)
@@ -132,8 +137,8 @@ class ProjectSet(models.Model):
 
 
 class ProjectSetLink(models.Model):
-    project_set = models.ForeignKey(
-        "ProjectSet", on_delete=models.CASCADE, related_name="links"
+    project_set = models.OneToOneField(
+        "ProjectSet", on_delete=models.CASCADE, related_name="link"
     )
     uuid = models.UUIDField(default=uuid4, editable=False, unique=True)
 
@@ -146,3 +151,18 @@ class ProjectSetLink(models.Model):
 
     def __str__(self):
         return f"{self.project_set.title} - {self.uuid}"
+
+
+class ProjectSetLinkAccess(models.Model):
+    project_set = models.ForeignKey(ProjectSet, on_delete=models.CASCADE)
+    ip_address = models.GenericIPAddressField()
+    accessed_at = models.DateTimeField(auto_now_add=True)
+
+
+class EmailStatus(models.Model):
+    email_id = models.CharField(max_length=255)
+    recipient_email = models.EmailField()
+    project_set = models.ForeignKey(ProjectSet, on_delete=models.CASCADE)
+    status = models.CharField(max_length=50)
+    last_checked = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)

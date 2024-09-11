@@ -18,14 +18,12 @@ def send_open_notification_email(user_email, project_set_title):
 
 @shared_task
 def send_shared_set_email(user_email, subject, body, project_set_id):
-    response = send_mail(
+    email_id = send_mail(
         subject=subject,
         message=body,
         from_email=settings.DEFAULT_FROM_EMAIL,
         recipient_list=[user_email],
     )
-
-    email_id = response.json().get("id")
 
     EmailStatus.objects.create(
         email_id=email_id,

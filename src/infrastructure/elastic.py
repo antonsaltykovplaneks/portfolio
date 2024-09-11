@@ -82,6 +82,7 @@ class ProjectDocument(Document):
         return (
             super(ProjectDocument, self)
             .get_queryset()
+            .filter(original_project__isnull=True)
             .select_related("user")
             .prefetch_related("industries", "technologies")
         )

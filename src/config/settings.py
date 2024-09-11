@@ -1,8 +1,9 @@
 import os
 import sys
-from decouple import config, Csv
 from pathlib import Path
 
+from celery.schedules import crontab
+from decouple import Csv, config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
@@ -71,8 +72,8 @@ if CONFIGURATION == "dev":
 
 if SENTRY_DSN:
     import sentry_sdk
-    from sentry_sdk.integrations.django import DjangoIntegration
     from sentry_sdk.integrations.celery import CeleryIntegration
+    from sentry_sdk.integrations.django import DjangoIntegration
     from sentry_sdk.integrations.redis import RedisIntegration
 
     def strip_sensitive_data(event, hint):
@@ -202,8 +203,12 @@ CELERY_RESULT_BACKEND = REDIS_URL
 CELERY_BEAT_SCHEDULER = "redbeat.RedBeatScheduler"
 # CELERYBEAT_SCHEDULE_FILENAME = config(
 #     'CELERYBEAT_SCHEDULE_FILENAME', default='/data/celerybeat-schedule.db')
-CELERY_BEAT_SCHEDULE = {}
-
+CELERY_BEAT_SCHEDULE = {
+    "check-email-statuses-every-hour": {
+        "task": "infrastructure.tasks.check_email_statuses",
+        "schedule": crontab(minute=0, hour="*"),
+    },
+}
 
 USE_HTTPS = False
 
@@ -220,8 +225,8 @@ ANYMAIL = {
     "MAILGUN_API_KEY": f"{config('MALIGUN_API_KEY')}",
     "MAILGUN_SENDER_DOMAIN": f"{config('MALIGUN_SUBDOMAIN')}",
 }
-DEFAULT_FROM_EMAIL = f"mailgun@{config('MALIGUN_SUBDOMAIN')}.planeks.org"
-SERVER_EMAIL = f"mailgun@{config('MALIGUN_SUBDOMAIN')}.planeks.org"
+DEFAULT_FROM_EMAIL = f"mailgun@{config('MALIGUN_SUBDOMAIN')}"
+SERVER_EMAIL = f"mailgun@{config('MALIGUN_SUBDOMAIN')}"
 
 CACHES = {
     "default": {

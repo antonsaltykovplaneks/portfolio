@@ -40,7 +40,20 @@
                 {{ industry }}{% if not forloop.last %}, {% endif %}
                 {% endfor %}
             </p>
-            <p><strong>Description:</strong> {{ project.description|slice:":150" }}... <a href="#">More</a></p>
+            <p><strong>Description:</strong>
+                <span class="editable-description">
+                    {% if project.description|length > 200 %}
+                    {{ project.description|slice:":200" }}
+                    <span class="dots"> ... </span>
+                    <span class="more-text" style="display: none;">
+                        {{project.description|slice:"200:" }}</span>
+                    <button class="btn btn-link show-description" data-project-id="{{ project.id }}"
+                        data-state="hidden">Show</button>
+                    {% else %}
+                    {{ project.description }}
+                    {% endif %}
+                </span>
+            </p>
             <p><strong>Technologies:</strong>
                 {% for tech in project.technologies.all %}
                 {{ tech }}{% if not forloop.last %}, {% endif %}
@@ -53,5 +66,6 @@
 </div>
 
 {% endblock %}
+<script src="{% static 'ajax_set.js' %}" defer></script>
 
 </html>

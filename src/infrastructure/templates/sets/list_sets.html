@@ -5,6 +5,26 @@
 
 {% block content %}
 <div class="container">
+    <div class="modal fade" id="manageSharedLinksModal" tabindex="-1" aria-labelledby="manageSharedLinksModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="manageSharedLinksModalLabel">Manage Shared Links</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="accordion" id="projectsAccordion">
+                        <!-- Shared links will be populated here dynamically -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="d-flex justify-content-between align-items-center my-3">
         <!-- Buttons to manage sets -->
         <div>
@@ -15,7 +35,7 @@
             </button>
         </div>
         <div class="d-flex gap-2">
-            <button class="btn btn-warning">Manage Shared Links</button>
+            <button class="btn btn-warning manage-shared-links">Manage Shared Links</button>
             <button class="btn btn-danger">Delete all</button>
         </div>
     </div>
@@ -68,8 +88,10 @@
                         <p><strong>Description:</strong>
                             <span class="editable-description">
                                 {% if project.description|length > 200 %}
-                                {{ project.description|slice:":200" }}...<span class="more-text"
-                                    style="display: none;">{{ project.description|slice:"200:" }}</span>
+                                {{ project.description|slice:":200" }}
+                                <span class="dots"> ... </span>
+                                <span class="more-text" style="display: none;">
+                                    {{ project.description|slice:"200:"}}</span>
                                 <button class="btn btn-link show-description" data-project-id="{{ project.id }}"
                                     data-state="hidden">Show</button>
                                 {% else %}
@@ -94,7 +116,8 @@
                         <div class="d-flex justify-content-end mt-3">
                             <button type="button" class="btn btn-link text-primary edit-project me-2">Edit</button>
                             <button type="button" class="btn btn-danger delete-project me-2"
-                                data-project-id="{{ project.id }}">Delete</button>
+                                data-project-id="{{ project.id }}"
+                                data-project-set-id="{{ project_set.id }}">Delete</button>
                             <button type="submit" class="btn btn-success d-none save-project me-2">Save</button>
                             <button class="cancel-edit btn btn-secondary d-none">Cancel</button>
                         </div>

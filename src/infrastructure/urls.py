@@ -3,6 +3,10 @@ from . import views
 
 
 urlpatterns = [
+    path("project_links/", views.get_project_sets_links, name="project_link_list"),
+    path(
+        "project_links/delete", views.delete_project_set_link, name="project_link_list"
+    ),
     path(
         "sets/<int:project_set_id>/link/",
         views.generate_project_set_link,

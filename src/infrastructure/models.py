@@ -137,6 +137,10 @@ class ProjectSetLink(models.Model):
     )
     uuid = models.UUIDField(default=uuid4, editable=False, unique=True)
 
+    @property
+    def absolute_url(self):
+        return self.get_absolute_url()
+
     def get_absolute_url(self):
         return settings.SITE_URL + reverse("project_set", args=[self.uuid.hex])
 

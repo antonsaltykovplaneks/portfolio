@@ -1,6 +1,66 @@
 document.addEventListener('DOMContentLoaded', function () {
     const csrfToken = getCookie('csrftoken');
 
+    document.querySelector('.manage-shared-links').addEventListener('click', function () {
+        fetchSharedLinks();
+    });
+
+    function fetchSharedLinks() {
+        fetch('/project_links/')
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    const accordion = document.getElementById('projectsAccordion');
+                    accordion.innerHTML = ''; // Clear existing content
+
+                    data.project_sets.forEach((projectSet, index) => {
+                        const projectItem = document.createElement('div');
+                        projectItem.className = 'accordion-item';
+
+                        const linksContent = projectSet.links.length > 0
+                            ? projectSet.links.map((link, linkIndex) => `
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <a href="${link}" target="_blank">${link}</a>
+                                    <button class="btn btn-link text-danger btn-sm" onclick="deleteLink('${link}')">
+                                        Delete
+                                    </button>
+                                </li>
+                            `).join('')
+                            : '<li class="list-group-item text-muted">No links available</li>'; // Display this when no links are available
+
+                        projectItem.innerHTML = `
+                            <h2 class="accordion-header d-flex justify-content-between align-items-center" id="heading-${index}">
+                                <button class="accordion-button ${index === 0 ? '' : 'collapsed'}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-${index}" aria-expanded="${index === 0 ? 'true' : 'false'}" aria-controls="collapse-${index}">
+                                    ${projectSet.title}
+                                </button>
+                                <button class="btn btn-link text-danger p-0" onclick="deleteAllLinks(${projectSet.id})">
+                                    <i class="bi bi-trash"></i> <!-- Trash icon for delete all -->
+                                </button>
+                            </h2>
+                            <div id="collapse-${index}" class="accordion-collapse collapse ${index === 0 ? 'show' : ''}" aria-labelledby="heading-${index}" data-bs-parent="#projectsAccordion">
+                                <div class="accordion-body">
+                                    <ul class="list-group">
+                                        ${linksContent}
+                                    </ul>
+                                </div>
+                            </div>
+                        `;
+
+                        accordion.appendChild(projectItem);
+                    });
+
+                    const modal = new bootstrap.Modal(document.getElementById('manageSharedLinksModal'));
+                    modal.show();
+                } else {
+                    alert('Failed to fetch shared links');
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching shared links:', error);
+                alert('An error occurred while fetching shared links');
+            });
+    }
+
     // Delete project set button click handler
     document.querySelectorAll('.delete-project-set').forEach(button => {
         button.addEventListener('click', function () {
@@ -39,6 +99,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 .then(data => {
                     if (data.status === 'success') {
                         navigator.clipboard.writeText(data.link);
+                        alert('Link copied to clipboard');
                     }
                 })
                 .catch(error => console.error('Error:', error));
@@ -47,17 +108,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
     document.querySelectorAll('.show-description').forEach(button => {
         button.addEventListener('click', function () {
-            const projectId = button.getAttribute('data-project-id');
             const moreText = button.previousElementSibling;
+            const dots = button.parentElement.querySelector('.dots');;
 
             if (button.getAttribute('data-state') === 'hidden') {
-                // Show the full description
                 moreText.style.display = 'inline';
+                dots.style.display = 'none';
                 button.textContent = 'Hide';
                 button.setAttribute('data-state', 'visible');
             } else {
-                // Hide the full description
                 moreText.style.display = 'none';
+                dots.style.display = 'inline';
                 button.textContent = 'Show';
                 button.setAttribute('data-state', 'hidden');
             }
@@ -68,8 +129,10 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('.delete-project').forEach(button => {
         button.addEventListener('click', function () {
             const projectId = this.getAttribute('data-project-id');
+            const projectSetId = this.getAttribute('data-project-set-id');
             let text = 'Are you sure you want to delete this project?';
-            if (document.querySelectorAll(`.project-item[data-project-id="${projectId}"]`).length === 1) {
+            const isLast = document.querySelector(`div[id=project-set-${projectSetId}]`).querySelector("div").querySelectorAll("div[data-project-id]").length === 1;
+            if (isLast) {
                 text = "This is the only project in the set. Deleting this project will delete the set. Are you sure you want to delete this project?";
             }
             if (confirm(text)) {
@@ -84,8 +147,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     .then(data => {
                         if (data.status === 'success') {
                             document.querySelector(`.project-item[data-project-id="${projectId}"]`).remove();
-                            if (document.querySelectorAll('.project-item').length === 0) {
-                                document.querySelector('.no-projects').classList.remove('d-none');
+                            if (isLast) {
+                                document.querySelector(`div[id=project-set-${projectSetId}]`).parentElement.remove();
                             }
                         }
                     })
@@ -370,16 +433,55 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     let industriesOptions = [];
     let technologiesOptions = [];
-
-    function toggleDescription(button) {
-        const moreText = button.previousElementSibling.querySelector('.more-text');
-        if (moreText.style.display === 'none') {
-            moreText.style.display = 'inline';
-            button.textContent = 'Hide';
-        } else {
-            moreText.style.display = 'none';
-            button.textContent = 'Show';
-        }
-    }
 });
 
+
+function deleteLink(link) {
+    if (confirm('Are you sure you want to delete this link?')) {
+        fetch(`/project_links/delete`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ link: link })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert('Link deleted successfully');
+                    fetchSharedLinks();
+                } else {
+                    alert('Failed to delete link');
+                }
+            })
+            .catch(error => {
+                console.error('Error deleting link:', error);
+                alert('An error occurred while deleting the link');
+            });
+    }
+}
+
+function deleteAllLinks(projectId) {
+    if (confirm('Are you sure you want to delete all links for this project?')) {
+        fetch(`/delete_all_links/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ project_id: projectId })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert('All links deleted successfully');
+                    fetchSharedLinks();
+                } else {
+                    alert('Failed to delete all links');
+                }
+            })
+            .catch(error => {
+                console.error('Error deleting all links:', error);
+                alert('An error occurred while deleting the links');
+            });
+    }
+}

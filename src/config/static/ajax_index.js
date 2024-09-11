@@ -91,6 +91,25 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    document.querySelectorAll('.show-description').forEach(button => {
+        button.addEventListener('click', function () {
+            const projectId = button.getAttribute('data-project-id');
+            const moreText = button.previousElementSibling;
+
+            if (button.getAttribute('data-state') === 'hidden') {
+                // Show the full description
+                moreText.style.display = 'inline';
+                button.textContent = 'Hide';
+                button.setAttribute('data-state', 'visible');
+            } else {
+                // Hide the full description
+                moreText.style.display = 'none';
+                button.textContent = 'Show';
+                button.setAttribute('data-state', 'hidden');
+            }
+        });
+    });
+
     // Replace project buttons based on action (add/remove or reset)
     function replaceProjectButtons(action) {
         const storedProjects = JSON.parse(localStorage.getItem('selectedProjects')) || [];
@@ -398,4 +417,28 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     }
+
+    document.querySelectorAll('.delete-project').forEach(button => {
+        button.addEventListener('click', function () {
+            const projectId = this.getAttribute('data-project-id');
+            let text = 'Are you sure you want to delete this project?';
+            if (confirm(text)) {
+                fetch(`/projects/${projectId}/`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            document.querySelector(`.project-item[data-project-id="${projectId}"]`).remove();
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+            }
+        });
+    });
+
 });

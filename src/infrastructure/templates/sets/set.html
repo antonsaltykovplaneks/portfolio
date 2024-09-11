@@ -1,24 +1,30 @@
-{% extends "base.html" %}
+<!doctype html>
+<html lang="en">
 {% load static %}
 
-{% block title %}My Set{% endblock %}
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="{% block meta_description %}{% endblock %}">
+    <meta name="author" content="PLANEKS">
+    {% block extra_meta %}{% endblock %}
+    <link rel="canonical" href="{{ request.path }}">
+
+    <!-- Favicons -->
+    <link rel="apple-touch-icon" sizes="144x144" href="{% static 'django-icon.jpeg' %}">
+    <link rel="shortcut icon" href="{% static 'django-icon.jpeg' %}">
+
+    <link href="https://fonts.googleapis.com/css?family=Fira+Sans:400,500,600" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'vendor/bootstrap-5.3.2-dist/css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'vendor/fontawesome-free-6.1.1-web/css/all.min.css' %}">
+    <script src="{% static 'vendor/bootstrap-5.3.2-dist/js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'vendor/fontawesome-free-6.1.1-web/js/all.min.js' %}"></script>
+    {% block extra_css %}{% endblock %}
+</head>
+
 
 {% block content %}
-<div class="container">
-    <div class="d-flex justify-content-between align-items-center my-3">
-        <!-- Buttons to manage sets -->
-        <div>
-            <button class="btn btn-primary">Private</button>
-            <button class="btn btn-secondary">Public</button>
-            <button class="btn btn-secondary">My sets</button>
-        </div>
-        <div class="d-flex gap-2">
-            <button class="btn btn-warning">Manage Shared Links</button>
-            <button class="btn btn-success">Create new set</button>
-            <button class="btn btn-danger">Delete all</button>
-        </div>
-    </div>
-
+<div class="container pt-5">
     <!-- Project List -->
     <div>
         <h3> {{ project_set.title }} </h3>
@@ -27,20 +33,27 @@
         {% for project in project_set.projects.all %}
         <div class="project-item mb-3 p-3 border rounded">
             <div class="d-flex justify-content-between align-items-center">
-                <h5>{{ project.title }} <small class="text-muted">original</small></h5>
-                <div class="btn-group">
-                    <button class="btn btn-link text-primary">Edit</button>
-
-                    
-                    <button class="btn btn-link text-danger">Delete</button>
-                </div>
+                <h5>{{ project.title }} </h5>
             </div>
             <p><strong>Industries:</strong>
                 {% for industry in project.industries.all %}
                 {{ industry }}{% if not forloop.last %}, {% endif %}
                 {% endfor %}
             </p>
-            <p><strong>Description:</strong> {{ project.description|slice:":150" }}... <a href="#">More</a></p>
+            <p><strong>Description:</strong>
+                <span class="editable-description">
+                    {% if project.description|length > 200 %}
+                    {{ project.description|slice:":200" }}
+                    <span class="dots"> ... </span>
+                    <span class="more-text" style="display: none;">
+                        {{project.description|slice:"200:" }}</span>
+                    <button class="btn btn-link show-description" data-project-id="{{ project.id }}"
+                        data-state="hidden">Show</button>
+                    {% else %}
+                    {{ project.description }}
+                    {% endif %}
+                </span>
+            </p>
             <p><strong>Technologies:</strong>
                 {% for tech in project.technologies.all %}
                 {{ tech }}{% if not forloop.last %}, {% endif %}
@@ -53,3 +66,6 @@
 </div>
 
 {% endblock %}
+<script src="{% static 'ajax_set.js' %}" defer></script>
+
+</html>

@@ -1,4 +1,8 @@
 from django.db import models
+from django.urls import reverse
+from uuid import uuid4
+
+from config import settings
 
 
 class Project(models.Model):
@@ -41,9 +45,6 @@ class Project(models.Model):
             return True
 
         return False
-
-    def is_original(self):
-        return self.original_project is None
 
     def create_copy(self, user):
         copy = Project.objects.create(
@@ -118,9 +119,30 @@ class ProjectSet(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def create_link(self):
+        link = ProjectSetLink.objects.create(project_set=self)
+        return link.get_absolute_url()
+
     def add_project(self, project):
         project_copy = project.create_copy(self.user)
         self.projects.add(project_copy)
 
     def __str__(self):
         return self.title
+
+
+class ProjectSetLink(models.Model):
+    project_set = models.ForeignKey(
+        "ProjectSet", on_delete=models.CASCADE, related_name="links"
+    )
+    uuid = models.UUIDField(default=uuid4, editable=False, unique=True)
+
+    @property
+    def absolute_url(self):
+        return self.get_absolute_url()
+
+    def get_absolute_url(self):
+        return settings.SITE_URL + reverse("project_set", args=[self.uuid.hex])
+
+    def __str__(self):
+        return f"{self.project_set.title} - {self.uuid}"

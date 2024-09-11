@@ -12,33 +12,33 @@
             <input type="text" id="industry-search" class="form-control mb-3" placeholder="Search industry">
             <form id="industry-filters" style="max-height: 300px; overflow-y: auto;">
                 {% for industry, data in results.facets.industries.items %}
-                    <div class="form-check">
-                        <input class="form-check-input industry-filter" type="checkbox" value="{{ industry }}" id="{{ industry|slugify }}"
-                            {% if industry in selected_industries %}checked{% endif %}>
-                        <label class="form-check-label" for="{{ industry|slugify }}">
-                            {{ industry }}
-                            {% if data.new_projects > 0 and not industry in selected_industries %}
-                                <span class="text-muted"> (+{{ data.new_projects }})</span>
-                            {% else %}
-                                ({{ data.count }})
-                            {% endif %}
-                        </label>
-                    </div>
+                <div class="form-check">
+                    <input class="form-check-input industry-filter" type="checkbox" value="{{ industry }}"
+                        id="{{ industry|slugify }}" {% if industry in selected_industries %}checked{% endif %}>
+                    <label class="form-check-label" for="{{ industry|slugify }}">
+                        {{ industry }}
+                        {% if data.new_projects > 0 and not industry in selected_industries %}
+                        <span class="text-muted"> (+{{ data.new_projects }})</span>
+                        {% else %}
+                        ({{ data.count }})
+                        {% endif %}
+                    </label>
+                </div>
                 {% endfor %}
             </form>
-        
+
             <!-- Technology Filters -->
             <h5 class="mt-4">Technology</h5>
             <input type="text" id="technology-search" class="form-control mb-3" placeholder="Search technology">
             <form id="technology-filters" style="max-height: 300px; overflow-y: auto;">
                 {% for technology, count in results.facets.technologies.items %}
-                    <div class="form-check">
-                        <input class="form-check-input technology-filter" type="checkbox" value="{{ technology }}" id="{{ technology|slugify }}"
-                            {% if technology in selected_technologies %}checked{% endif %}>
-                        <label class="form-check-label" for="{{ technology|slugify }}">
-                            {{ technology }} ({{ count }})
-                        </label>
-                    </div>
+                <div class="form-check">
+                    <input class="form-check-input technology-filter" type="checkbox" value="{{ technology }}"
+                        id="{{ technology|slugify }}" {% if technology in selected_technologies %}checked{% endif %}>
+                    <label class="form-check-label" for="{{ technology|slugify }}">
+                        {{ technology }} ({{ count }})
+                    </label>
+                </div>
                 {% endfor %}
             </form>
         </div>
@@ -49,34 +49,36 @@
                 <div>
                     <button class="btn btn-secondary">Private</button>
                     <button class="btn btn-secondary">Public</button>
-                    <button class="btn btn-secondary" onclick="window.location.href='{% url 'project_set' %}'">
+                    <button class="btn btn-secondary" onclick="window.location.href='{% url 'project_set_list' %}'">
                         My sets
                     </button>
                 </div>
                 <div class="d-flex gap-2">
-                    <button class="btn btn-success">Add new project</button>    
+                    <button class="btn btn-success">Add new project</button>
                     <form action="{% url 'upload_csv' %}" method="get" class="m-0 p-0">
                         <button type="submit" class="btn btn-success">Upload .csv</button>
                     </form>
                     <button class="btn btn-success add-new-set">Add new set</button>
                 </div>
-                <div class="modal fade" id="setNameModal" tabindex="-1" aria-labelledby="setNameModalLabel" aria-hidden="true">
+                <div class="modal fade" id="setNameModal" tabindex="-1" aria-labelledby="setNameModalLabel"
+                    aria-hidden="true">
                     <div class="modal-dialog">
-                      <div class="modal-content">
-                        <div class="modal-header">
-                          <h5 class="modal-title" id="setNameModalLabel">Enter Set Name</h5>
-                          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="setNameModalLabel">Enter Set Name</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <input type="text" id="setNameInput" class="form-control" placeholder="Enter set name">
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="button" class="btn btn-primary" id="sendSetButton">Send</button>
+                            </div>
                         </div>
-                        <div class="modal-body">
-                          <input type="text" id="setNameInput" class="form-control" placeholder="Enter set name">
-                        </div>
-                        <div class="modal-footer">
-                          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                          <button type="button" class="btn btn-primary" id="sendSetButton">Send</button>
-                        </div>
-                      </div>
                     </div>
-                  </div>
+                </div>
             </div>
 
             <!-- Search Bar -->
@@ -87,29 +89,41 @@
             <!-- Project List -->
             <div id="project-list">
                 {% for project in results.data %}
-                    <div class="project-item mb-3 p-3 border rounded" data-project-id="{{ project.id }}">
-                        <h5 class="mb-1">{{ project.title }}</h5>
-                        <p><strong>Industries:</strong> 
-                            {% for industry in project.industries %}
-                                <a href="#" class="industry-link" data-industry="{{ industry }}">{{ industry }}</a>
-                                {% if not forloop.last %}, {% endif %}
-                            {% endfor %}
-                        </p>
-                        <p><strong>Description:</strong> {{ project.description }}</p>
-                        <p><strong>Technologies:</strong> 
-                            {% for technology in project.technologies %}
-                                <a href="#" class="technology-link" data-technology="{{ technology }}">{{ technology }}</a>
-                                {% if not forloop.last %}, {% endif %}
-                            {% endfor %}
-                        </p>
-                        {% if project.url %}
-                            <p><strong>URL:</strong> <a href="{{ project.url }}" target="_blank">{{ project.url }}</a></p>
-                        {% endif %}
-                        <div class="d-flex justify-content-end">
-                            <a href="#" class="btn btn-link">Edit</a>
-                            <a href="#" class="btn btn-link text-danger">Delete</a>
-                        </div>
+                <div class="project-item mb-3 p-3 border rounded" data-project-id="{{ project.id }}">
+                    <h5 class="mb-1">{{ project.title }}</h5>
+                    <p><strong>Industries:</strong>
+                        {% for industry in project.industries %}
+                        <a href="#" class="industry-link" data-industry="{{ industry }}">{{ industry }}</a>
+                        {% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+                    </p>
+                    <p><strong>Description:</strong>
+                        <span class="editable-description">
+                            {% if project.description|length > 200 %}
+                            {{ project.description|slice:":200" }}...<span class="more-text" style="display: none;">{{
+                                project.description|slice:"200:" }}</span>
+                            <button class="btn btn-link show-description" data-project-id="{{ project.id }}"
+                                data-state="hidden">Show</button>
+                            {% else %}
+                            {{ project.description }}
+                            {% endif %}
+                        </span>
+                    </p>
+                    <p><strong>Technologies:</strong>
+                        {% for technology in project.technologies %}
+                        <a href="#" class="technology-link" data-technology="{{ technology }}">{{ technology }}</a>
+                        {% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+                    </p>
+                    {% if project.url %}
+                    <p><strong>URL:</strong> <a href="{{ project.url }}" target="_blank">{{ project.url }}</a></p>
+                    {% endif %}
+                    <div class="d-flex justify-content-end">
+                        <a href="#" class="btn btn-link">Edit</a>
+                        <button type="button" class="btn btn-danger delete-project me-2"
+                            data-project-id="{{ project.id }}">Delete</button>
                     </div>
+                </div>
                 {% endfor %}
             </div>
 
@@ -117,23 +131,29 @@
             <nav aria-label="Project pagination">
                 <ul class="pagination justify-content-center">
                     {% if page > 1 %}
-                        <li class="page-item">
-                            <a class="page-link" href="?page={{ page|add:-1 }}&{{ query_params }}&selected_projects={{ selected_projects|join:',' }}" aria-label="Previous">
-                                <span aria-hidden="true">&laquo;</span>
-                            </a>
-                        </li>
+                    <li class="page-item">
+                        <a class="page-link"
+                            href="?page={{ page|add:-1 }}&{{ query_params }}&selected_projects={{ selected_projects|join:',' }}"
+                            aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
                     {% endif %}
                     {% for num in page_range %}
-                        <li class="page-item {% if page == num %}active{% endif %}">
-                            <a class="page-link" href="?page={{ num }}&{{ query_params }}&selected_projects={{ selected_projects|join:',' }}">{{ num }}</a>
-                        </li>
+                    <li class="page-item {% if page == num %}active{% endif %}">
+                        <a class="page-link"
+                            href="?page={{ num }}&{{ query_params }}&selected_projects={{ selected_projects|join:',' }}">
+                            {{ num }}</a>
+                    </li>
                     {% endfor %}
                     {% if has_next_page %}
-                        <li class="page-item">
-                            <a class="page-link" href="?page={{ page|add:1 }}&{{ query_params }}&selected_projects={{ selected_projects|join:',' }}" aria-label="Next">
-                                <span aria-hidden="true">&raquo;</span>
-                            </a>
-                        </li>
+                    <li class="page-item">
+                        <a class="page-link"
+                            href="?page={{ page|add:1 }}&{{ query_params }}&selected_projects={{ selected_projects|join:',' }}"
+                            aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
                     {% endif %}
                 </ul>
             </nav>

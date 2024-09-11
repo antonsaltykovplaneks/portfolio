@@ -20,6 +20,7 @@ def is_restricted_internal_url(url):
         "/superadmin/",
         "/linkedin/login/",
         "/verify-email/",
+        "/sets/",
     ]
     return not max([url.startswith(x) for x in URL_PREFIXES_EXCLUDES])
 

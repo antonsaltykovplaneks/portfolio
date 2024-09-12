@@ -83,12 +83,13 @@ class ProjectSetDetailView(View):
         project_set = link.project_set
 
         ip_address = request.META.get("REMOTE_ADDR")
+        ip_address_hash = hash(ip_address)
 
         if not ProjectSetLinkAccess.objects.filter(
-            project_set=project_set, ip_address=ip_address
+            project_set=project_set, ip_address_hash=ip_address_hash
         ).exists():
             ProjectSetLinkAccess.objects.create(
-                project_set=project_set, ip_address=ip_address
+                project_set=project_set, ip_address_hash=ip_address_hash
             )
 
             send_open_notification_email.delay(

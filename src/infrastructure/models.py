@@ -155,7 +155,7 @@ class ProjectSetLink(models.Model):
 
 class ProjectSetLinkAccess(models.Model):
     project_set = models.ForeignKey(ProjectSet, on_delete=models.CASCADE)
-    ip_address = models.GenericIPAddressField()
+    ip_address_hash = models.CharField(max_length=255)
     accessed_at = models.DateTimeField(auto_now_add=True)
 
 

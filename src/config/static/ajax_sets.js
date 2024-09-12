@@ -111,6 +111,15 @@ document.addEventListener('DOMContentLoaded', function () {
                             `).join('')
                             : '<li class="list-group-item text-muted">No links available</li>'; // Display this when no links are available
 
+                        const emailStatusesContent = projectSet.email_statuses.length > 0
+                            ? projectSet.email_statuses.map((emailStatus, emailIndex) => `
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    ${emailStatus.recipient_email}
+                                    <span class="badge ${getStatusBadgeClass(emailStatus.status)}">${emailStatus.status}</span>
+                                </li>
+                            `).join('')
+                            : '<li class="list-group-item text-muted">No email statuses available</li>'; // Display this when no email statuses are available
+
                         projectItem.innerHTML = `
                             <h2 class="accordion-header d-flex justify-content-between align-items-center" id="heading-${index}">
                                 <button class="accordion-button ${index === 0 ? '' : 'collapsed'}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-${index}" aria-expanded="${index === 0 ? 'true' : 'false'}" aria-controls="collapse-${index}">
@@ -125,6 +134,10 @@ document.addEventListener('DOMContentLoaded', function () {
                                     <ul class="list-group">
                                         ${linksContent}
                                     </ul>
+                                    <h5 class="mt-3">Email Statuses</h5>
+                                    <ul class="list-group">
+                                        ${emailStatusesContent}
+                                    </ul>
                                 </div>
                             </div>
                         `;
@@ -132,10 +145,11 @@ document.addEventListener('DOMContentLoaded', function () {
                         projectItem.querySelector('.delete-all-button').addEventListener('click', function () {
                             deleteAllLinks(this.getAttribute('data-project-id'));
                         });
-                        projectItem.querySelector('.delete-one-link').addEventListener('click', function () {
-                            deleteLink(this.getAttribute('data-link'));
+                        projectItem.querySelectorAll('.delete-one-link').forEach(button => {
+                            button.addEventListener('click', function () {
+                                deleteLink(this.getAttribute('data-link'));
+                            });
                         });
-
 
                         accordion.appendChild(projectItem);
                     });
@@ -150,6 +164,21 @@ document.addEventListener('DOMContentLoaded', function () {
                 console.error('Error fetching shared links:', error);
                 alert('An error occurred while fetching shared links');
             });
+    }
+
+    function getStatusBadgeClass(status) {
+        switch (status) {
+            case 'sent':
+                return 'bg-primary';
+            case 'delivered':
+                return 'bg-success';
+            case 'opened':
+                return 'bg-info';
+            case 'ignored':
+                return 'bg-warning';
+            default:
+                return 'bg-secondary';
+        }
     }
 
     // Delete project set button click handler

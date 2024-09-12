@@ -29,11 +29,9 @@ def send_shared_set_email(user_email, subject, body, project_set_id):
         email_id=email_id,
         recipient_email=user_email,
         project_set_id=project_set_id,
-        status="Sent",
     )
 
 
-# tasks.py
 @shared_task
 def check_email_statuses():
     email_statuses = EmailStatus.objects.filter(status__in=["Sent", "Delivered"])
@@ -45,13 +43,14 @@ def check_email_statuses():
 
         if response.status_code == 200:
             status = response.json().get("event")
-            email_status.status = status
-            email_status.save()
 
             if status == "opened":
                 send_open_notification_email.delay(
                     email_status.project_set.user.email, email_status.project_set.title
                 )
+                email_status.status = EmailStatus.Status.OPENED
+                email_status.save()
+
         else:
             # Handle error
             pass

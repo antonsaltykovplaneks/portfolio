@@ -157,6 +157,7 @@ class ProjectSetLinkAccess(models.Model):
     project_set = models.ForeignKey(ProjectSet, on_delete=models.CASCADE)
     ip_address_hash = models.CharField(max_length=255)
     accessed_at = models.DateTimeField(auto_now_add=True)
+    view_count = models.PositiveIntegerField(default=0)
 
 
 class EmailStatus(models.Model):

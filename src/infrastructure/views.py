@@ -1,3 +1,4 @@
+import hashlib
 import json
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
@@ -83,15 +84,17 @@ class ProjectSetDetailView(View):
         project_set = link.project_set
 
         ip_address = request.META.get("REMOTE_ADDR")
-        ip_address_hash = hash(ip_address)
+        ip_address_hash = hashlib.sha256(ip_address.encode()).hexdigest()
 
-        if not ProjectSetLinkAccess.objects.filter(
-            project_set=project_set, ip_address_hash=ip_address_hash
-        ).exists():
-            ProjectSetLinkAccess.objects.create(
-                project_set=project_set, ip_address_hash=ip_address_hash
-            )
+        access_record, created = ProjectSetLinkAccess.objects.get_or_create(
+            project_set=project_set,
+            ip_address_hash=ip_address_hash,
+        )
 
+        access_record.view_count += 1
+        access_record.save()
+
+        if created:
             send_open_notification_email.delay(
                 project_set.user.email, project_set.title
             )

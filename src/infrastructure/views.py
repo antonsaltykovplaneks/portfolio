@@ -9,6 +9,7 @@ from django.contrib.auth.decorators import login_required
 from rest_framework import generics
 
 from infrastructure.models import (
+    EmailStatus,
     Industry,
     Project,
     ProjectSet,
@@ -24,20 +25,26 @@ from infrastructure.tasks import send_open_notification_email, send_shared_set_e
 @require_http_methods(["GET"])
 def get_project_sets_links(request):
     project_sets = ProjectSet.objects.filter(user=request.user).prefetch_related("link")
-    return JsonResponse(
-        {
-            "status": "success",
-            "project_sets": [
-                {
-                    "id": project_set.id,
-                    "title": project_set.title,
-                    "links": [project_set.get_link()],
-                }
-                for project_set in project_sets
-                if project_set.get_link()
-            ],
-        }
-    )
+
+    project_sets_data = []
+
+    for project_set in project_sets:
+        links = (
+            project_set.link.get_absolute_url() if hasattr(project_set, "link") else []
+        )
+        email_statuses = EmailStatus.objects.filter(project_set=project_set).values(
+            "recipient_email", "status"
+        )
+        project_sets_data.append(
+            {
+                "id": project_set.id,
+                "title": project_set.title,
+                "links": [links],
+                "email_statuses": list(email_statuses),
+            }
+        )
+
+    return JsonResponse({"status": "success", "project_sets": project_sets_data})
 
 
 @login_required

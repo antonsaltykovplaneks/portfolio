@@ -161,9 +161,20 @@ class ProjectSetLinkAccess(models.Model):
 
 
 class EmailStatus(models.Model):
+    class Status(models.TextChoices):
+        SENT = ("sent", "sent")
+        DELIVERED = ("delivered", "delivered")
+        FAILED = ("failed", "failed")
+        OPENED = ("opened", "opened")
+        IGNORED = ("ignored", "ignored")
+
     email_id = models.CharField(max_length=255)
     recipient_email = models.EmailField()
     project_set = models.ForeignKey(ProjectSet, on_delete=models.CASCADE)
-    status = models.CharField(max_length=50)
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.SENT,
+    )
     last_checked = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)

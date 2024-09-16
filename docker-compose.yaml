@@ -29,6 +29,7 @@ services:
   celerybeat:
     <<: *django
     command: celery-dev beat -l INFO
+    
   flower:
     image: mher/flower:0.9.7
     command: "flower --broker=${REDIS_URL} --port=5555 --url-prefix=flower"
@@ -42,6 +43,7 @@ services:
     image: redis:6.0
     volumes:
       - dev_redis:/data
+
   postgres:
     build:
       context: .
@@ -76,22 +78,6 @@ services:
       - ES_JAVA_OPTS=-Xms512m -Xmx512m
     ports:
       - "9200:9200"
-# Uncomment if you need Caddy locally
-#  caddy:
-#    build:
-#      context: .
-#      dockerfile: ./docker/caddy/Dockerfile
-#    image: "${COMPOSE_IMAGES_PREFIX}_dev_caddy"
-#    ports:
-#      - "80:80"
-#      - "443:443"
-#    volumes:
-#      - dev_caddy:/data
-#    env_file:
-#      - ./.env
-#    depends_on:
-#      - django
-#      - flower
 
 volumes:
   dev_redis:

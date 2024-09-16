@@ -130,6 +130,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
             ],
+            "debug": DEBUG,
         },
     },
 ]
@@ -144,6 +145,14 @@ DATABASES = {
         "PASSWORD": config("POSTGRES_PASSWORD"),
     },
 }
+
+if CONFIGURATION == "testing":
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
+        }
+    }
 
 AUTH_USER_MODEL = "accounts.User"
 AUTH_PASSWORD_VALIDATORS = []
@@ -236,7 +245,10 @@ CACHES = {
     },
 }
 
-ELASTICSEARCH_DSL = {"default": {"hosts": "http://elasticsearch:9200"}}
+ELASTICSEARCH_DSL = {
+    "default": {"hosts": "http://elasticsearch:9200"},
+    "test": {"hosts": "http://elasticsearch_test:9200"},
+}
 DEFAULT_SIZE_PAGE = 10
 DEFAULT_FIRST_PAGE = 1
 
@@ -278,3 +290,4 @@ elif CONFIGURATION == "testing":
 
     EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
     DEFAULT_FROM_EMAIL = "test@test.com"
+    ELASTICSEARCH_DSL["default"] = ELASTICSEARCH_DSL["test"]

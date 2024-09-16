@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const cancelButton = document.createElement('button');
     const setNameInput = document.createElement('input');
     const saveSetButton = document.createElement('button');
+    const selectedProjectsCounter = document.createElement('span');
     let selectedProjects = new Set();
 
     cancelButton.classList.add('btn', 'btn-secondary');
@@ -19,6 +20,10 @@ document.addEventListener('DOMContentLoaded', function () {
     setNameInput.style.maxWidth = '150px';
     setNameInput.style.display = 'none';
 
+    selectedProjectsCounter.style.display = 'none';
+    selectedProjectsCounter.classList.add('ml-2', 'selected-projects-counter', 'badge', 'bg-warning', 'p-2', 'rounded');
+    selectedProjectsCounter.textContent = 'Selected: 0';
+
     saveSetButton.classList.add('btn', 'btn-primary', 'mt-2');
     saveSetButton.textContent = 'Save Set';
     saveSetButton.style.display = 'none';
@@ -26,6 +31,7 @@ document.addEventListener('DOMContentLoaded', function () {
     addNewSetButton.parentNode.insertBefore(cancelButton, addNewSetButton.nextSibling);
     addNewSetButton.parentNode.insertBefore(setNameInput, cancelButton.nextSibling);
     addNewSetButton.parentNode.insertBefore(saveSetButton, setNameInput.nextSibling);
+    addNewSetButton.parentNode.insertBefore(selectedProjectsCounter, saveSetButton.nextSibling);
 
     // Add new set button click handler
     addNewSetButton.addEventListener('click', function () {
@@ -61,31 +67,26 @@ document.addEventListener('DOMContentLoaded', function () {
         cancelButton.style.display = isEnabled ? 'inline-block' : 'none';
         setNameInput.style.display = isEnabled ? 'inline-block' : 'none';
         saveSetButton.style.display = isEnabled ? 'inline-block' : 'none';
+        selectedProjectsCounter.style.display = isEnabled ? 'inline-block' : 'none';
         disableFilters(isEnabled);
         replaceProjectButtons(isEnabled ? 'add' : 'reset');
+        updateSelectedProjectsCounter();
     }
 
     // Enable/Disable industry and technology filters
     function disableFilters(disable) {
-        // const opacity = disable ? '0.5' : '1';
-
-        // industryFilterForm.style.opacity = opacity;
-        // technologyFilterForm.style.opacity = opacity;
-
         industryFilterForm.querySelectorAll('input').forEach(input => {
             if (!input.checked) {
                 input.style.opacity = '0.5';
                 input.disabled = disable;
-            }
-            else {
+            } else {
                 input.style.opacity = '1';
             }
         });
         technologyFilterForm.querySelectorAll('input').forEach(input => {
             if (!input.checked) {
                 input.disabled = disable;
-            }
-            else {
+            } else {
                 input.style.opacity = '1';
             }
         });
@@ -158,6 +159,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 addButton.style.backgroundColor = 'red';
             }
             localStorage.setItem('selectedProjects', JSON.stringify(Array.from(selectedProjects)));
+            updateSelectedProjectsCounter();
         });
 
         return addButton;
@@ -184,6 +186,12 @@ document.addEventListener('DOMContentLoaded', function () {
         selectedProjects.clear();
         localStorage.removeItem('selectedProjects');
         toggleSetMode(false);
+        updateSelectedProjectsCounter();
+    }
+
+    // Update the selected projects counter
+    function updateSelectedProjectsCounter() {
+        selectedProjectsCounter.textContent = `Selected: ${selectedProjects.size}`;
     }
 
     // Save project set to server
@@ -212,6 +220,7 @@ document.addEventListener('DOMContentLoaded', function () {
             })
             .catch(error => console.error('Error:', error));
     }
+
     document.addEventListener('DOMContentLoaded', function () {
         document.querySelectorAll('.delete-project-set').forEach(button => {
             button.addEventListener('click', function () {
@@ -255,6 +264,7 @@ document.addEventListener('DOMContentLoaded', function () {
             return cookieValue;
         }
     });
+
     const debounce = (func, delay) => {
         let timeoutId;
         return function (...args) {
@@ -441,4 +451,42 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
+    const addProjectForm = document.getElementById('addProjectForm');
+
+    addProjectForm.addEventListener('submit', function (event) {
+        event.preventDefault();
+
+        const title = document.getElementById('projectTitle').value;
+        const industries = document.getElementById('projectIndustries').value.split(',').map(item => item.trim());
+        const description = document.getElementById('projectDescription').value;
+        const technologies = document.getElementById('projectTechnologies').value.split(',').map(item => item.trim());
+        const url = document.getElementById('projectUrl').value;
+
+        const projectData = {
+            title: title,
+            industries: industries,
+            description: description,
+            technologies: technologies,
+            url: url
+        };
+
+        fetch('/projects/add', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify(projectData)
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert('Project added successfully!');
+                    addProjectForm.reset();
+                } else {
+                    alert('Failed to add project: ' + data.message);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    });
 });

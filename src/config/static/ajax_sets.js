@@ -131,6 +131,10 @@ document.addEventListener('DOMContentLoaded', function () {
                             </h2>
                             <div id="collapse-${index}" class="accordion-collapse collapse ${index === 0 ? 'show' : ''}" aria-labelledby="heading-${index}" data-bs-parent="#projectsAccordion">
                                 <div class="accordion-body">
+                                    <div class="d-flex justify-content-between mb-3">
+                                        <p class="mb-0"><strong>Downloads:</strong> ${projectSet.download_count}</p>
+                                        <p class="mb-0"><strong>Shared Links:</strong> ${projectSet.shared_link_count}</p>
+                                    </div>
                                     <ul class="list-group">
                                         ${linksContent}
                                     </ul>

@@ -119,6 +119,17 @@ class ProjectSet(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    download_count = models.PositiveIntegerField(default=0)
+    shared_link_count = models.PositiveIntegerField(default=0)
+
+    def increment_download_count(self):
+        self.download_count += 1
+        self.save()
+
+    def increment_shared_link_count(self):
+        self.shared_link_count += 1
+        self.save()
+
     def get_link(self):
         if ProjectSetLink.objects.filter(project_set=self).exists():
             return ProjectSetLink.objects.get(project_set=self).absolute_url

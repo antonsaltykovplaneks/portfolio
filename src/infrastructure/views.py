@@ -1,13 +1,18 @@
 import hashlib
 import json
-from django.http import JsonResponse
+
+from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render
+from django.template.loader import render_to_string
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.http import require_http_methods
-from django.contrib.auth.decorators import login_required
+from elasticsearch.helpers import bulk
 from rest_framework import generics
+from weasyprint import HTML
 
+from infrastructure.elastic import ProjectDocument
 from infrastructure.models import (
     EmailStatus,
     Industry,
@@ -19,6 +24,20 @@ from infrastructure.models import (
 )
 from infrastructure.serializers import IndustrySerializer, TechnologySerializer
 from infrastructure.tasks import send_open_notification_email, send_shared_set_email
+
+
+@login_required
+def download_pdf(request, project_set_id):
+    project_set = ProjectSet.objects.get(id=project_set_id)
+    project_set.increment_download_count()
+    html_string = render_to_string(
+        "sets/  pdf_template.html", {"project_set": project_set}
+    )
+    html = HTML(string=html_string)
+    response = HttpResponse(content_type="application/pdf")
+    response["Content-Disposition"] = f'attachment; filename="{project_set.title}.pdf"'
+    html.write_pdf(response)
+    return response
 
 
 @login_required
@@ -39,6 +58,8 @@ def get_project_sets_links(request):
             {
                 "id": project_set.id,
                 "title": project_set.title,
+                "download_count": project_set.download_count,
+                "shared_link_count": project_set.shared_link_count,
                 "links": [links],
                 "email_statuses": list(email_statuses),
             }
@@ -102,6 +123,7 @@ class ProjectSetDetailView(View):
         access_record.save()
 
         if created:
+            project_set.increment_shared_link_count()
             send_open_notification_email.delay(
                 project_set.user.email, project_set.title
             )
@@ -137,6 +159,60 @@ class ProjectSetDetailView(View):
         project_set.save()
 
         return JsonResponse({"status": "success"})
+
+
+@login_required
+@require_http_methods(["POST"])
+def add_project(request):
+    data = json.loads(request.body)
+    title = data.get("title")
+    industries = data.get("industries", [])
+    description = data.get("description")
+    technologies = data.get("technologies", [])
+    url = data.get("url", "")
+    if Project.objects.filter(title=title, user=request.user).exists():
+        return JsonResponse(
+            {
+                "status": "error",
+                "message": "Project with the same title already exists",
+            },
+            status=400,
+        )
+
+    project = Project.objects.create(
+        title=title, description=description, url=url, user=request.user
+    )
+
+    for technology_title in technologies:
+        technology = Technology.objects.filter(title__iexact=technology_title).first()
+        if not technology:
+            technology = Technology.objects.create(title=technology_title)
+        project.technologies.add(technology)
+
+    for industry_title in industries:
+        industry = Industry.objects.filter(title__iexact=industry_title).first()
+        if not industry:
+            industry = Industry.objects.create(title=industry_title)
+        project.industries.add(industry)
+
+    project.save()
+    bulk(
+        ProjectDocument._get_connection(),
+        [ProjectDocument.get_indexing_action(project)],
+    )
+    return JsonResponse(
+        {
+            "status": "success",
+            "project": {
+                "id": project.id,
+                "title": project.title,
+                "industries": industries,
+                "description": project.description,
+                "technologies": technologies,
+                "url": project.url,
+            },
+        }
+    )
 
 
 @method_decorator(login_required, name="dispatch")

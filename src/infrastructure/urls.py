@@ -23,7 +23,9 @@ urlpatterns = [
         name="project_set",
     ),
     path("sets/", views.ProjectSetView.as_view(), name="project_set_list"),
+    path("projects/add", views.add_project, name="add_project"),
     path("projects/<int:project_id>/", views.ProjectView.as_view(), name="project"),
     path("industries/", views.IndustryListView.as_view(), name="industry-list"),
     path("technologies/", views.TechnologyListView.as_view(), name="technology-list"),
+    path("download_pdf/<int:project_set_id>/", views.download_pdf, name="download_pdf"),
 ]

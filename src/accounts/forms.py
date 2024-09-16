@@ -5,7 +5,7 @@ from django.contrib.auth.forms import UserChangeForm as BaseUserChangeForm
 from django.contrib.auth.forms import (
     ReadOnlyPasswordHashField,
     AuthenticationForm,
-    PasswordChangeForm, 
+    PasswordChangeForm,
 )
 from .models import User
 from config import settings
@@ -187,3 +187,5 @@ class CustomPasswordChangeForm(PasswordChangeForm):
         super().__init__(*args, **kwargs)
         # Remove the current password field
         self.fields.pop("old_password")
+        self.fields["new_password1"].min_length = settings.MINIMUM_PASSWORD_LENGTH
+        self.fields["new_password2"].min_length = settings.MINIMUM_PASSWORD_LENGTH

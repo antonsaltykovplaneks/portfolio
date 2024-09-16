@@ -53,13 +53,56 @@
                         My sets
                     </button>
                 </div>
-                <div class="d-flex gap-2">
-                    <button class="btn btn-success">Add new project</button>
+                <div class="d-flex gap-2 align-items-center">
+                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addProjectModal">Add new
+                        project</button>
                     <form action="{% url 'upload_csv' %}" method="get" class="m-0 p-0">
                         <button type="submit" class="btn btn-success">Upload .csv</button>
                     </form>
                     <button class="btn btn-success add-new-set">Add new set</button>
                 </div>
+                <!-- Add Project Modal -->
+                <div class="modal fade" id="addProjectModal" tabindex="-1" aria-labelledby="addProjectModalLabel"
+                    aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="addProjectModalLabel">Add New Project</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="addProjectForm">
+                                    <div class="mb-3">
+                                        <label for="projectTitle" class="form-label">Title</label>
+                                        <input type="text" class="form-control" id="projectTitle" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="projectDescription" class="form-label">Description</label>
+                                        <textarea class="form-control" id="projectDescription" rows="3"
+                                            required></textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="projectIndustries" class="form-label">Industries</label>
+                                        <input type="text" class="form-control" placeholder="Split industries by comma"
+                                            id="projectIndustries" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="projectTechnologies" class="form-label">Technologies</label>
+                                        <input type="text" class="form-control"
+                                            placeholder="Split technologies by comma" id="projectTechnologies" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="projectUrl" class="form-label">URL</label>
+                                        <input type="url" class="form-control" id="projectUrl">
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Add Project</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="modal fade" id="setNameModal" tabindex="-1" aria-labelledby="setNameModalLabel"
                     aria-hidden="true">
                     <div class="modal-dialog">

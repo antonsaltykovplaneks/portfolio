@@ -44,7 +44,6 @@
         </div>
     </div>
 
-
     <div class="d-flex justify-content-between align-items-center my-3">
         <!-- Buttons to manage sets -->
         <div>
@@ -86,6 +85,10 @@
         </div>
         <div id="project-set-{{ project_set.id }}" class="collapse">
             <div class="card-body">
+                <div class="d-flex flex-column text-right">
+                    <p class="mb-0"><strong>Downloads:</strong> {{ project_set.download_count }}</p>
+                    <p class="mb-0"><strong>Shared Links:</strong> {{ project_set.shared_link_count }}</p>
+                </div>
                 {% for project in project_set.projects.all %}
                 <div class="project-item mb-3 p-3 border rounded" data-project-id="{{ project.id }}">
                     <form class="edit-form">

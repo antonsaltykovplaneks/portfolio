@@ -27,6 +27,7 @@ services:
   celerybeat:
     <<: *django
     command: celery-dev beat -l INFO
+    
   flower:
     image: mher/flower:0.9.7
     command: "flower --broker=${REDIS_URL} --port=5555 --url-prefix=flower"
@@ -40,6 +41,7 @@ services:
     image: redis:6.0
     volumes:
       - dev_redis:/data
+
   postgres:
     build:
       context: .

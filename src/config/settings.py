@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "accounts",
     "infrastructure",
     "anymail",
+    "flower",
     "django_elasticsearch_dsl",
 ]
 

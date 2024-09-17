@@ -65,9 +65,12 @@ services:
     environment:
       - discovery.type=single-node
       - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    volumes:
+      - prod_elasticsearch:/usr/share/elasticsearch/data
 
 volumes:
   prod_postgres:
   prod_backups:
   prod_redis:
   prod_caddy:
+  prod_elasticsearch:

@@ -28,6 +28,8 @@ services:
     command: "flower --broker=${REDIS_URL} --port=5555 --url-prefix=flower --basic_auth=${CELERY_FLOWER_USER}:${CELERY_FLOWER_PASSWORD}"
     depends_on:
       - redis
+    ports:
+      - "5555:5555"
     env_file:
       - ./.env
   postgres:

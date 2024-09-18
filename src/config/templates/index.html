@@ -7,6 +7,14 @@
 <div class="container">
     <div class="row">
         <div class="col-md-2">
+            <div class="card mb-3">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Total Projects</h5>
+                    <p class="card-text" id="total-count-data">
+                        {{ total_results }} / {{ results.overall_project_count }}
+                    </p>
+                </div>
+            </div>
             <!-- Industry Filters -->
             <h5>Industry</h5>
             <input type="text" id="industry-search" class="form-control mb-3" placeholder="Search industry">
@@ -16,31 +24,28 @@
                     <input class="form-check-input industry-filter" type="checkbox" value="{{ industry }}"
                         id="{{ industry|slugify }}" {% if industry in selected_industries %}checked{% endif %}>
                     <label class="form-check-label" for="{{ industry|slugify }}">
-                        {{ industry }}
-                        {% if data.new_projects > 0 and not industry in selected_industries %}
-                        <span class="text-muted"> (+{{ data.new_projects }})</span>
-                        {% else %}
-                        ({{ data.count }})
-                        {% endif %}
+                        {{ industry }} {{ data.count }}/{{ data.overall_count }}
                     </label>
                 </div>
                 {% endfor %}
             </form>
+            <button type="button" class="btn btn-secondary mt-2" id="reset-industry-filters">Reset</button>
 
             <!-- Technology Filters -->
             <h5 class="mt-4">Technology</h5>
             <input type="text" id="technology-search" class="form-control mb-3" placeholder="Search technology">
             <form id="technology-filters" style="max-height: 300px; overflow-y: auto;">
-                {% for technology, count in results.facets.technologies.items %}
+                {% for technology, data in results.facets.technologies.items %}
                 <div class="form-check">
                     <input class="form-check-input technology-filter" type="checkbox" value="{{ technology }}"
                         id="{{ technology|slugify }}" {% if technology in selected_technologies %}checked{% endif %}>
                     <label class="form-check-label" for="{{ technology|slugify }}">
-                        {{ technology }} ({{ count }})
+                        {{ technology }} {{ data.count }}/{{ data.overall_count }}
                     </label>
                 </div>
                 {% endfor %}
             </form>
+            <button type="button" class="btn btn-secondary mt-2" id="reset-technology-filters">Reset</button>
         </div>
 
         <div class="col-md-10">

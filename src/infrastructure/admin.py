@@ -1,6 +1,7 @@
 import tablib
 from django import forms
 from django.contrib import admin, messages
+from django.http import HttpResponse
 from django.template.response import TemplateResponse
 from elasticsearch.helpers import bulk
 from import_export import fields, resources, widgets
@@ -99,21 +100,6 @@ class ProjectResource(resources.ModelResource):
             "technologies",
         )
 
-        export_order = (
-            "id",
-            "title",
-            "description",
-            "url",
-            "created_at",
-            "updated_at",
-            "user__name",
-            "user__email",
-            "user__company__title",
-            "user__date_joined",
-            "industries",
-            "technologies",
-        )
-
     def get_import_id_fields(self):
         return ["user_id", "title"]
 
@@ -162,8 +148,34 @@ class ProjectResource(resources.ModelResource):
             instance.user_id = user_id
 
 
+class ProjectResourceExport(ProjectResource):
+    class Meta:
+        model = Project
+        fields = (
+            "title",
+            "description",
+            "url",
+            "industries",
+            "technologies",
+        )
+
+        export_order = (
+            "title",
+            "description",
+            "url",
+            "industries",
+            "technologies",
+        )
+
+
 class UserSelectForm(ImportForm):
     # Custom form to select a user during import
+    user = forms.ModelChoiceField(
+        queryset=User.objects.all(), required=False, label="Select User"
+    )
+
+
+class UserExportForm(forms.Form):
     user = forms.ModelChoiceField(
         queryset=User.objects.all(), required=False, label="Select User"
     )
@@ -268,3 +280,37 @@ class ProjectAdmin(ImportExportModelAdmin):
         context = super().get_import_context_data(**kwargs)
         context["opts"] = self.model._meta
         return context
+
+    def export_action(self, request, *args, **kwargs):
+        if request.method == "POST":
+            form = UserExportForm(request.POST)
+            if form.is_valid():
+                user = form.cleaned_data["user"]
+                queryset = self.get_queryset(request)
+                if user:
+                    queryset = queryset.filter(user=user)
+                export_data = self.get_export_data(request, queryset, *args, **kwargs)
+                content_type = self.get_export_formats()[0].CONTENT_TYPE
+                response = HttpResponse(export_data, content_type=content_type)
+                response["Content-Disposition"] = f'attachment; filename="projects.csv"'
+                return response
+        else:
+            form = UserExportForm()
+
+        context = {
+            "form": form,
+            "opts": self.model._meta,
+            "action_checkbox_name": admin.helpers.ACTION_CHECKBOX_NAME,
+        }
+
+        return TemplateResponse(request, self.import_template_name, context)
+
+    def get_export_data(self, request, queryset, *args, **kwargs):
+        export_format = self.get_export_formats()[0]()
+
+        export_data = export_format.export_data(
+            ProjectResourceExport().export(queryset=queryset),
+            **kwargs,
+        )
+
+        return export_data

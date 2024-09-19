@@ -169,10 +169,24 @@ def search_projects(
     if search_string:
         search = search.query(
             Q(
-                "multi_match",
-                query=search_string,
-                fields=["title", "description"],
-                fuzziness="AUTO",  # Fuzziness for typo correction
+                "bool",
+                should=[
+                    Q(
+                        "multi_match",
+                        query=search_string,
+                        fields=["title", "description"],
+                        fuzziness="AUTO",  # Handle typo correction
+                        type="best_fields",  # Prioritize exact matches first
+                        operator="or",  # Will match any word from the search_string
+                    ),
+                    Q(
+                        "multi_match",
+                        query=search_string,
+                        fields=["title", "description"],
+                        type="phrase_prefix",  # Exact phrase matching
+                    ),
+                ],
+                minimum_should_match=1,
             )
         )
 

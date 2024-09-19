@@ -238,6 +238,7 @@ class ProjectView(View):
         project = get_object_or_404(Project, pk=project_id)
         ProjectSet.objects.filter(projects__id=project_id).delete()
         project.delete()
+        ProjectDocument.get(id=project_id).delete()
         return JsonResponse({"status": "success"})
 
 

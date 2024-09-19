@@ -33,6 +33,25 @@ document.addEventListener('DOMContentLoaded', function () {
     addNewSetButton.parentNode.insertBefore(saveSetButton, setNameInput.nextSibling);
     addNewSetButton.parentNode.insertBefore(selectedProjectsCounter, saveSetButton.nextSibling);
 
+    document.getElementById('reset-industry-filters').addEventListener('click', function () {
+        document.getElementById('industry-search').value = '';
+        document.querySelectorAll('.industry-filter').forEach(checkbox => {
+            checkbox.checked = false;
+            checkbox.parentElement.style.display = '';
+        });
+        updateURLParams();
+    });
+
+    // Reset technology filters
+    document.getElementById('reset-technology-filters').addEventListener('click', function () {
+        document.getElementById('technology-search').value = '';
+        document.querySelectorAll('.technology-filter').forEach(checkbox => {
+            checkbox.checked = false;
+            checkbox.parentElement.style.display = '';
+        });
+        updateURLParams();
+    });
+
     // Add new set button click handler
     addNewSetButton.addEventListener('click', function () {
         if (!isSetMode) {
@@ -332,6 +351,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 // Update the pagination links
                 const newPagination = doc.querySelector('.pagination').outerHTML;
                 document.querySelector('.pagination').outerHTML = newPagination;
+
+                const newTotalProjects = doc.getElementById('total-count-data').textContent;
+                document.getElementById('total-count-data').textContent = newTotalProjects;
 
                 if (isSetMode == true) {
                     replaceProjectButtons('add');

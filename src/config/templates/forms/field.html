@@ -46,8 +46,8 @@
         {% endfor %}
     {% else %}
         {% if not hide_label %}
-        <label class="control-label" for="{{field.id_for_label}}" class="{{ extra_label_class }}">{{field.label|safe}}
-            {% if field.field.required and not hide_required_badges %}{{ required_text }}{% endif %}
+        <label class="control-label {{ extra_label_class }}" for="{{field.id_for_label}}">{{field.label|safe}}
+            {% if field.field.required %}{{ required_text }}{% endif %}
             {% if field.help_text %}
                 <small class="text-muted"><i class="fas fa-question-circle" data-toggle="tooltip" data-html="true" title="{{field.help_text|safe}}"></i></small>
             {% endif %}

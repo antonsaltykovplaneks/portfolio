@@ -169,17 +169,29 @@ def search_projects(
     if search_string:
         search = search.query(
             Q(
-                "multi_match",
-                query=search_string,
-                fields=["title", "description"],
-                fuzziness="AUTO",  # Fuzziness for typo correction
+                "bool",
+                should=[
+                    Q(
+                        "multi_match",
+                        query=search_string,
+                        fields=["title", "description"],
+                        fuzziness="AUTO",  # Handle typo correction
+                        type="best_fields",  # Prioritize exact matches first
+                        operator="or",  # Will match any word from the search_string
+                    ),
+                    Q(
+                        "multi_match",
+                        query=search_string,
+                        fields=["title", "description"],
+                        type="phrase_prefix",  # Exact phrase matching
+                    ),
+                ],
+                minimum_should_match=1,
             )
         )
 
     if technology_filters:
-        # Apply "AND" logic by requiring all selected technologies to be present in each project
-        for tech in technology_filters:
-            search = search.filter("term", technologies__raw=tech)
+        search = search.filter("terms", technologies__raw=technology_filters)
 
     if industry_filters:
         search = search.filter("terms", industries__raw=industry_filters)
@@ -202,14 +214,6 @@ def search_projects(
         for bucket in response.aggregations.technologies.buckets
     )
     # Create industry counts with additional info on potential projects if filter is applied
-    industry_counts = OrderedDict()
-    for bucket in response.aggregations.industries.buckets:
-        potential_count = bucket.potential_projects.doc_count + bucket.doc_count
-        industry_counts[bucket.key] = {
-            "count": bucket.doc_count,
-            "potential_count": potential_count,
-            "new_projects": potential_count - bucket.doc_count,
-        }
 
     # Fetch all unique industries for the user to ensure they are always shown
     all_industries_search = ProjectDocument.search()
@@ -224,29 +228,70 @@ def search_projects(
         for bucket in all_industries_response.aggregations.all_industries.buckets
     }
 
+    all_technologies_search = ProjectDocument.search()
+    all_technologies_search = all_technologies_search.filter("term", user__id=user.id)
+    all_technologies_search.aggs.bucket(
+        "all_technologies", "terms", field="technologies.raw", size=10000
+    )
+    all_technologies_response = all_technologies_search.execute()
+
+    all_technologies = {
+        bucket.key: bucket.doc_count
+        for bucket in all_technologies_response.aggregations.all_technologies.buckets
+    }
+
+    industry_counts = OrderedDict()
+    for bucket in response.aggregations.industries.buckets:
+        industry_counts[bucket.key] = {
+            "count": bucket.doc_count,
+            "overall_count": all_industries[bucket.key],
+        }
+
     # Ensure all industries are included in the final result
     for industry in all_industries.keys():
         if industry not in industry_counts:
             industry_counts[industry] = {
-                "count": all_industries[industry],
-                "potential_count": all_industries[industry],
-                "new_projects": all_industries[industry],
+                "count": 0,
+                "overall_count": all_industries[industry],
             }
 
-    # Filter out zero-count technologies unless they were in the filters
-    if technology_filters:
-        technology_counts = OrderedDict(
-            (tech, count)
-            for tech, count in technology_counts.items()
-            if count > 0 or tech in technology_filters
-        )
+    technology_counts = OrderedDict()
+    for bucket in response.aggregations.technologies.buckets:
+        technology_counts[bucket.key] = {
+            "count": bucket.doc_count,
+            "overall_count": all_technologies[bucket.key],
+        }
+
+    # Ensure all industries are included in the final result
+    for technology in all_technologies.keys():
+        if technology not in technology_counts:
+            technology_counts[technology] = {
+                "count": 0,
+                "overall_count": all_technologies[technology],
+            }
 
     # Sort the dictionaries by keys (alphabetical order)
-    technology_counts = OrderedDict(sorted(technology_counts.items()))
-    industry_counts = OrderedDict(sorted(industry_counts.items()))
+    technology_counts = OrderedDict(
+        sorted(
+            technology_counts.items(),
+            key=lambda x: (x[1]["overall_count"], x[0]),
+            reverse=True,
+        )
+    )
+    industry_counts = OrderedDict(
+        sorted(
+            industry_counts.items(),
+            key=lambda x: (x[1]["overall_count"], x[0]),
+            reverse=True,
+        )
+    )
+    # get only the count of projects for the user
+    overall_projects_search = ProjectDocument.search().filter("term", user__id=user.id)
 
+    overall_project_count = overall_projects_search.execute().hits.total.value
     return {
         "data": response,
+        "overall_project_count": overall_project_count,
         "facets": {
             "technologies": technology_counts,
             "industries": industry_counts,

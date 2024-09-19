@@ -102,7 +102,11 @@ def upload_csv(request):
                 )
                 index_result = bulk(ProjectDocument._get_connection(), actions)
                 print(f"Indexing Result: {index_result}")
-                messages.success(request, "CSV file imported and indexed successfully!")
+                messages.success(
+                    request,
+                    "CSV file imported and indexed successfully! Created projects - %d, Updated projects - %d"
+                    % (result.totals["new"], result.totals["update"]),
+                )
                 return redirect(reverse("index"))
             else:
                 messages.error(request, "CSV file import failed due to errors.")

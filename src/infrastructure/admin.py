@@ -314,3 +314,22 @@ class ProjectAdmin(ImportExportModelAdmin):
         )
 
         return export_data
+
+    def delete_model(self, request, obj):
+        """
+        Delete a model instance and its corresponding index in Elasticsearch.
+        """
+        ProjectDocument.get(id=obj.id).delete()
+        obj.delete()
+
+    def delete_queryset(self, request, queryset):
+        """
+        Delete multiple model instances and their corresponding indexes in Elasticsearch.
+        """
+        count = queryset.count()
+        for obj in queryset:
+            ProjectDocument.get(id=obj.id).delete()
+        queryset.delete()
+        self.message_user(
+            request, f"Successfully deleted {count} projects and their indexes."
+        )

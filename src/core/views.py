@@ -7,10 +7,11 @@ from django.urls import reverse
 from elasticsearch.helpers import bulk
 
 from config import settings
+from config.logging import log
 from core.forms import CSVUploadForm
 from infrastructure.admin import ProjectResource
 from infrastructure.elastic import ProjectDocument, search_projects
-from infrastructure.models import Project
+from infrastructure.models import Project, FilterUsage
 
 
 def index(request):
@@ -21,6 +22,26 @@ def index(request):
     page = int(request.GET.get("page", settings.DEFAULT_FIRST_PAGE))
     size = int(request.GET.get("size", settings.DEFAULT_SIZE_PAGE))
     sort_by = request.GET.get("sort_by")
+
+    log(
+        "info",
+        f"User {user.email} filtered projects with query: {search_string}, technologies: {technologies}, industries: {industries}, page: {page}, size: {size}, sort_by: {sort_by}",
+    )
+
+    # Update filter usage statistics
+    for tech in technologies:
+        filter_usage, _ = FilterUsage.objects.get_or_create(
+            filter_type="technology", filter_value=tech
+        )
+        filter_usage.usage_count += 1
+        filter_usage.save()
+
+    for industry in industries:
+        filter_usage, _ = FilterUsage.objects.get_or_create(
+            filter_type="industry", filter_value=industry
+        )
+        filter_usage.usage_count += 1
+        filter_usage.save()
 
     results = search_projects(
         user=user,
@@ -80,13 +101,13 @@ def upload_csv(request):
             result = project_resource.import_data(
                 dataset, dry_run=True, user_id=request.user.id
             )
-            print(f"Dry run result: {result.totals}")
+            log(f"Dry run result: {result.totals}")
 
             if not result.has_errors():
                 result = project_resource.import_data(
                     dataset, dry_run=False, user_id=request.user.id
                 )
-                print(f"Result: {result.totals}")
+                log(f"Result: {result.totals}")
                 created_or_updated_ids = set()
                 for row_result in result.rows:
                     if row_result.import_type in ("new", "update"):
@@ -101,7 +122,7 @@ def upload_csv(request):
                     for project in projects_to_index
                 )
                 index_result = bulk(ProjectDocument._get_connection(), actions)
-                print(f"Indexing Result: {index_result}")
+                log(f"Indexing Result: {index_result}")
                 messages.success(
                     request,
                     "CSV file imported and indexed successfully! Created projects - %d, Updated projects - %d"

@@ -29,6 +29,50 @@ CSRF_TRUSTED_ORIGINS = config("CSRF_TRUSTED_ORIGINS", default=SITE_URL, cast=Csv
 
 SENTRY_DSN = config("SENTRY_DSN", default="")
 
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "file": {
+            "level": "DEBUG",
+            "class": "logging.handlers.TimedRotatingFileHandler",
+            "filename": os.path.join(
+                os.path.dirname(__file__), "logs", "application.log"
+            ),
+            "when": "midnight",
+            "interval": 1,
+            "backupCount": 7,
+            "formatter": "detailed",
+        },
+        "console": {
+            "level": "DEBUG",
+            "class": "logging.StreamHandler",
+            "formatter": "detailed",
+        },
+    },
+    "formatters": {
+        "detailed": {
+            "format": "%(asctime)s - %(name)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s",
+        },
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["file", "console"],
+            "level": "INFO",
+            "propagate": True,
+        },
+        "advancedLogger": {
+            "handlers": ["file", "console"],
+            "level": "DEBUG",
+            "propagate": False,
+        },
+        "django.utils.autoreload": {
+            "handlers": ["file", "console"],
+            "level": "INFO",  # Change this to INFO to exclude DEBUG messages
+            "propagate": False,
+        },
+    },
+}
 
 # Application definition
 

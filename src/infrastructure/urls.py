@@ -3,6 +3,7 @@ from . import views
 
 
 urlpatterns = [
+    path("admin/popular-filters/", views.popular_filters_view, name="popular_filters"),
     path("project_links/", views.get_project_sets_links, name="project_link_list"),
     path(
         "project_links/delete", views.delete_project_set_link, name="project_link_list"

@@ -1,6 +1,7 @@
 import hashlib
 import json
 
+from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render
@@ -12,9 +13,11 @@ from elasticsearch.helpers import bulk
 from rest_framework import generics
 from weasyprint import HTML
 
+from config.logging import log
 from infrastructure.elastic import ProjectDocument
 from infrastructure.models import (
     EmailStatus,
+    FilterUsage,
     Industry,
     Project,
     ProjectSet,
@@ -31,7 +34,7 @@ def download_pdf(request, project_set_id):
     project_set = ProjectSet.objects.get(id=project_set_id)
     project_set.increment_download_count()
     html_string = render_to_string(
-        "sets/  pdf_template.html", {"project_set": project_set}
+        "sets/pdf_template.html", {"project_set": project_set}
     )
     html = HTML(string=html_string)
     response = HttpResponse(content_type="application/pdf")
@@ -232,6 +235,11 @@ class ProjectView(View):
         project.industries.set(Industry.objects.filter(id__in=industry_ids))
         project.save()
 
+        log(
+            "info",
+            f"User {request.user.email} updated project {project.id} with title: {project.title}, description: {project.description}, url: {project.url}, technologies: {technology_ids}, industries: {industry_ids}",
+        )
+
         return JsonResponse({"status": "success"})
 
     def delete(self, request, project_id):
@@ -239,6 +247,9 @@ class ProjectView(View):
         ProjectSet.objects.filter(projects__id=project_id).delete()
         project.delete()
         ProjectDocument.get(id=project_id).delete()
+
+        log("info", f"User {request.user.email} deleted project {project.id}")
+
         return JsonResponse({"status": "success"})
 
 
@@ -259,10 +270,16 @@ class ProjectSetView(View):
         project_set.projects.set(projects)
         project_set.save()
 
+        log(
+            "info",
+            f"User {request.user.email} created project set {project_set.id} with title: {title}, projects: {project_ids}",
+        )
+
         return JsonResponse({"status": "success"})
 
     def get(self, request):
         project_sets = ProjectSet.objects.filter(user=request.user)
+        log("info", f"User {request.user.email} accessed project sets")
         return render(request, "sets/list_sets.html", {"project_sets": project_sets})
 
 
@@ -274,3 +291,20 @@ class IndustryListView(generics.ListAPIView):
 class TechnologyListView(generics.ListAPIView):
     queryset = Technology.objects.all()
     serializer_class = TechnologySerializer
+
+
+@staff_member_required
+def popular_filters_view(request):
+    popular_technologies = FilterUsage.objects.filter(
+        filter_type="technology"
+    ).order_by("-usage_count")[:10]
+    popular_industries = FilterUsage.objects.filter(filter_type="industry").order_by(
+        "-usage_count"
+    )[:10]
+
+    context = {
+        "popular_technologies": popular_technologies,
+        "popular_industries": popular_industries,
+    }
+
+    return render(request, "admin/popular_filters.html", context)

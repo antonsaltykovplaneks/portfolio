@@ -8,11 +8,27 @@ from import_export import fields, resources, widgets
 from import_export.admin import ImportExportModelAdmin
 from import_export.formats.base_formats import CSV, TextFormat
 from import_export.forms import ImportForm
+from django.urls import reverse
 
 from accounts.models import User
+from config.logging import log
 from infrastructure.elastic import ProjectDocument
 
-from .models import Company, Industry, Project, ProjectSet, Technology
+from .models import Company, Industry, Project, ProjectSet, Technology, FilterUsage
+
+
+class FiltersModelAdmin(admin.ModelAdmin):
+    change_list_template = "admin/change_list_with_button.html"
+
+    def changelist_view(self, request, extra_context=None):
+        extra_context = extra_context or {}
+        extra_context["popular_filters_url"] = reverse("popular_filters")
+        return super(FiltersModelAdmin, self).changelist_view(
+            request, extra_context=extra_context
+        )
+
+
+admin.site.register(FilterUsage, FiltersModelAdmin)
 
 
 @admin.register(Company)
@@ -105,7 +121,7 @@ class ProjectResource(resources.ModelResource):
 
     def before_import(self, dataset, **kwargs):
         super().before_import(dataset, **kwargs)
-        # Append a column for user_id with the value proviai[ded in kwargs
+        # Append a column for user_id with the value provided in kwargs
         # Avoids Dimension Error
         dataset.append_col(
             [kwargs.get("user_id")] * dataset.__len__(), header="user_id"
@@ -249,7 +265,7 @@ class ProjectAdmin(ImportExportModelAdmin):
                     *args,
                     **kwargs,
                 )
-                print(f"Result: {result.totals}")
+                log(f"Result: {result.totals}")
                 if not result.has_errors() and not result.has_validation_errors():
                     created_or_updated_ids = set()
                     for row_result in result.rows:
@@ -265,7 +281,7 @@ class ProjectAdmin(ImportExportModelAdmin):
                         for project in projects_to_index
                     )
                     index_result = bulk(ProjectDocument._get_connection(), actions)
-                    print(f"Indexing Result: {index_result}")
+                    log(f"Indexing Result: {index_result}")
                     messages.success(request, "Import successful!")
                     return self.process_result(result, request)
                 else:

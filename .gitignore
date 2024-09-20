@@ -4,6 +4,7 @@ src/.venv/
 *.*~
 *.egg-info
 *.log
+*.log.*
 *.pot
 *.pyc
 *.py~

@@ -22,6 +22,7 @@ from django.views.decorators.debug import sensitive_post_parameters
 from accounts.connectors import LinkedInConnector
 from accounts.tasks import send_email_celery_task
 from accounts.models import User
+from config.logging import log
 from .forms import (
     EditUserForm,
     UserAuthForm,
@@ -36,6 +37,7 @@ def personal_information_view(request):
     View to display the personal information of the logged-in user.
     """
     user = request.user
+    log("info", f"User {user.email} accessed personal information view")
     context = {
         "user": user,
         "menu": "personal_information",
@@ -60,9 +62,11 @@ def personal_information_edit_view(request):
                     request,
                     "Email verification link has been sent to your email address.",
                 )
+                log("info", f"User {user.email} changed email, verification link sent")
 
             form.save()
             messages.success(request, "Your personal information has been updated.")
+            log("info", f"User {user.email} updated personal information")
             return redirect(reverse("personal_information"))
     else:
         form = EditUserForm(instance=user)
@@ -90,6 +94,7 @@ def login_view(request):
 
         if form_login.is_valid():
             login(request, form_login.get_user())
+            log("info", f"User {request.user.email} logged in")
             return redirect(reverse("index"))
 
     else:
@@ -121,6 +126,7 @@ def register_view(request):
             messages.info(
                 request, "Email verification link has been sent to your email address."
             )
+            log("info", f"User {user.email} registered and logged in")
             return redirect(reverse("index"))
         else:
             context = {
@@ -137,6 +143,7 @@ def logout_view(request):
     View to handle user logout.
     """
     _next = request.GET.get("next")
+    log("info", f"User {request.user.email} logged out")
     logout(request)
     return redirect(_next if _next else settings.LOGOUT_REDIRECT_URL)
 
@@ -147,10 +154,11 @@ def verify_email(request, uidb64, token):
 
     if default_token_generator.check_token(user, token):
         user.is_verified = True
-
         user.save()
+        log("info", f"User {user.email} verified email")
         return HttpResponse("Email successfully verified!")
     else:
+        log("warning", f"Invalid verification link for user {user.email}")
         return HttpResponse("Invalid verification link.")
 
 
@@ -162,9 +170,10 @@ def linkedin_login_callback(request):
     if request.method == "GET":
         try:
             LinkedInConnector.login(request)
+            log("info", f"User {request.user.email} logged in via LinkedIn")
             return redirect(reverse("index"))
         except HTTPException as e:
-            print(f"LinkedIn login error: {e}")
+            log("error", f"LinkedIn login error: {e}")
             messages.error(request, "LinkedIn login failed", "error")
             return redirect(reverse("login"))
     return redirect(reverse("login_register"))
@@ -194,6 +203,10 @@ class PasswordResetModifiedView(PasswordResetView):
                 messages.WARNING,
                 _("This account cannot reset the password."),
             )
+            log(
+                "warning",
+                f"User {user.email} attempted password reset but has unusable password",
+            )
             return redirect("login")
 
         opts = {
@@ -207,6 +220,7 @@ class PasswordResetModifiedView(PasswordResetView):
             "extra_email_context": self.extra_email_context,
         }
         form.save(**opts)
+        log("info", f'Password reset email sent to {form["email"].data}')
         return super().form_valid(form)
 
 
@@ -233,5 +247,5 @@ class PasswordCreateView(PasswordContextMixin, FormView):
         messages.success(
             self.request, _("Your password has been successfully changed.")
         )
-
+        log("info", f"User {self.request.user.email} changed password successfully")
         return super().form_valid(form)

@@ -189,3 +189,15 @@ class EmailStatus(models.Model):
     )
     last_checked = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+
+class FilterUsage(models.Model):
+    filter_type = models.CharField(max_length=50)
+    filter_value = models.CharField(max_length=255)
+    usage_count = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        unique_together = ("filter_type", "filter_value")
+
+    def __str__(self):
+        return f"{self.filter_type}: {self.filter_value} ({self.usage_count})"

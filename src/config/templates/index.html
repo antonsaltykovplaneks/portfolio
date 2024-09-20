@@ -180,25 +180,20 @@
                 <ul class="pagination justify-content-center">
                     {% if page > 1 %}
                     <li class="page-item">
-                        <a class="page-link"
-                            href="?page={{ page|add:-1 }}&{{ query_params }}&selected_projects={{ selected_projects|join:',' }}"
-                            aria-label="Previous">
+                        <a class="page-link" href="?page={{ page|add:-1 }}&{{ query_params }}" aria-label="Previous">
                             <span aria-hidden="true">&laquo;</span>
                         </a>
                     </li>
                     {% endif %}
                     {% for num in page_range %}
                     <li class="page-item {% if page == num %}active{% endif %}">
-                        <a class="page-link"
-                            href="?page={{ num }}&{{ query_params }}&selected_projects={{ selected_projects|join:',' }}">
+                        <a class="page-link" href="?page={{ num }}&{{ query_params }}">
                             {{ num }}</a>
                     </li>
                     {% endfor %}
                     {% if has_next_page %}
                     <li class="page-item">
-                        <a class="page-link"
-                            href="?page={{ page|add:1 }}&{{ query_params }}&selected_projects={{ selected_projects|join:',' }}"
-                            aria-label="Next">
+                        <a class="page-link" href="?page={{ page|add:1 }}&{{ query_params }}" aria-label="Next">
                             <span aria-hidden="true">&raquo;</span>
                         </a>
                     </li>
